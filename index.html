@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Apuestas PRO ⚽</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="statusbar">
+    <div>API-Football: <span id="apiFootState" class="dot red">Offline</span></div>
+    <div>Odds: <span id="oddsState" class="dot red">Offline</span></div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabHome" class="tab active">🏠 Inicio</button>
+    <button id="tabPicks" class="tab">📋 Mis Picks</button>
+  </nav>
+
+  <!-- INICIO -->
+  <section id="pageHome" class="page">
+    <div class="filters">
+      <input id="dateInput" type="date"/>
+      <select id="compSelect"></select>
+      <select id="teamSelect" disabled></select>
+      <button id="btnSearch" class="btn primary full">🔍 Buscar partidos</button>
+    </div>
+
+    <div id="spinner" class="spinner hidden"></div>
+    <div id="matchCounter" class="counter hidden"></div>
+    <div id="noMatches" class="empty hidden">⚠️ No hay partidos para esta búsqueda.</div>
+
+    <div id="matchesList" class="list"></div>
+  </section>
+
+  <!-- MIS PICKS -->
+  <section id="pagePicks" class="page hidden">
+    <h3>✍️ Crear pick manual</h3>
+    <div class="grid2">
+      <input id="mpHome" placeholder="Equipo local"/>
+      <input id="mpAway" placeholder="Equipo visitante"/>
+      <select id="mpComp"></select>
+    </div>
+
+    <h4>📈 Mercados y cuotas</h4>
+    <div id="marketsGrid" class="markets-grid"></div>
+
+    <div class="actions">
+      <button id="btnAddPick" class="btn success">➕ Añadir Pick</button>
+      <button id="btnClearForm" class="btn danger">🧹 Limpiar</button>
+    </div>
+
+    <div class="summary">
+      <span id="picksCount">Picks: 0</span>
+      <span id="comboProb">Prob: 0%</span>
+      <span id="comboEV">EV: 0%</span>
+    </div>
+
+    <div id="picksList" class="list"></div>
+
+    <div class="actions">
+      <button id="btnExport" class="btn">📤 Exportar CSV</button>
+      <button id="btnClearPicks" class="btn danger">🗑️ Borrar todos</button>
+    </div>
+  </section>
+
+  <!-- FABs -->
+  <button id="fabRefresh" class="fab left" title="Refrescar APIs">🔄</button>
+  <button id="fabGoPicks" class="fab right" title="Ir a Mis Picks">📋</button>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
