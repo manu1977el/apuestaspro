@@ -5,7 +5,7 @@
 // 📅 Fecha actual
 const today = new Date().toISOString().split('T')[0];
 
-// 🧩 API KEYS — Pega aquí tus claves reales
+// 🧩 API KEYS
 const API_KEY_FOOTBALL = "6DF57D1853E112002FA1139673F50218";
 const API_KEY_ODDS = "ddc3cb56d665397d69ceb71faf0e1b8b";
 
@@ -13,7 +13,7 @@ const API_KEY_ODDS = "ddc3cb56d665397d69ceb71faf0e1b8b";
 const API_FIXTURES = "https://v3.football.api-sports.io/fixtures";
 const API_ODDS = "https://v3.football.api-sports.io/odds";
 
-// 🏆 Ligas populares (ids API-Football)
+// 🏆 Ligas populares
 const LEAGUES = [
   { id: 39, name: "Premier League" },
   { id: 140, name: "LaLiga" },
@@ -24,7 +24,7 @@ const LEAGUES = [
   { id: 3, name: "Europa League" }
 ];
 
-// 🧭 Elementos de UI
+// 🧭 Elementos UI
 const tabInicio = document.getElementById('tab-inicio');
 const tabPicks = document.getElementById('tab-picks');
 const sectionInicio = document.getElementById('inicio');
@@ -145,7 +145,6 @@ async function mostrarPartidos(partidos) {
   html += `</ul>`;
   resultados.innerHTML = html;
 
-  // Añadir listeners a botones de picks
   document.querySelectorAll('.btn-pick').forEach(btn => {
     btn.addEventListener('click', e => {
       const el = e.currentTarget;
@@ -155,7 +154,7 @@ async function mostrarPartidos(partidos) {
 }
 
 // =============================
-// 📝 Guardar picks (localStorage)
+// 📝 Guardar picks
 // =============================
 function guardarPick(home, away, hora) {
   const picks = JSON.parse(localStorage.getItem('picks') || '[]');
@@ -165,7 +164,7 @@ function guardarPick(home, away, hora) {
 }
 
 // =============================
-// 📥 Mostrar picks guardados
+// 📥 Mostrar picks
 // =============================
 function mostrarPicks() {
   const picks = JSON.parse(localStorage.getItem('picks') || '[]');
