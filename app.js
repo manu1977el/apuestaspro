@@ -6,8 +6,8 @@
 const today = new Date().toISOString().split('T')[0];
 
 // 🧩 API KEYS — Pega aquí tus claves reales
-const API_KEY_FOOTBALL = "PON_AQUI_TU_KEY_DE_API_FOOTBALL";
-const API_KEY_ODDS = "PON_AQUI_TU_KEY_DE_ODDS";
+const API_KEY_FOOTBALL = "6DF57D1853E112002FA1139673F50218";
+const API_KEY_ODDS = "ddc3cb56d665397d69ceb71faf0e1b8b";
 
 // 🌐 Endpoints
 const API_FIXTURES = "https://v3.football.api-sports.io/fixtures";
