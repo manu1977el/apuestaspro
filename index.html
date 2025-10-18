@@ -1,127 +1,143 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Apuestas PRO</title>
-
-  <!-- Estilos mínimos para que se vea bien sin tu CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚽ Apuestas PRO</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
-    :root { color-scheme: dark; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:#0b0b0c; color:#eee; }
-    header { display:flex; gap:14px; align-items:center; padding:10px 14px; background:#111; border-bottom:1px solid #222; }
-    .badge { padding:4px 8px; border-radius:12px; font-size:12px; background:#222; }
-    .online  { background:#124b27 !important; color:#bff1c7 !important; }
-    .offline { background:#4b1212 !important; color:#ffd6d6 !important; }
-    nav { display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid #1b1b1b; background:#101013; position:sticky; top:0; }
-    nav button { background:#1b1b1f; color:#ddd; border:1px solid #2a2a2a; padding:10px 14px; border-radius:8px; }
-    nav button.active { background:#2b66ff; border-color:#2b66ff; color:#fff; }
-    main { padding:16px; max-width:900px; margin:0 auto; }
-    section { margin-bottom:32px; }
-    h2,h3,h4 { margin:10px 0 12px; }
-    .card { background:#131316; border:1px solid #202025; border-radius:10px; padding:12px; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; }
-    .row input, .row select { flex:1 1 200px; background:#0f0f12; color:#fff; border:1px solid #2a2a2a; border-radius:8px; padding:10px; }
-    .btn { background:#2b66ff; color:#fff; border:0; padding:10px 14px; border-radius:8px; cursor:pointer; }
-    .btn.secondary { background:#222; color:#ddd; border:1px solid #333; }
-    /* Oculta la barra de estado de APIs si molesta mientras estamos offline */
-    .header-status { display:none; } /* quita esta línea si quieres verla */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0e0e0e;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #151515;
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+    .status-online { color: #00ff88; }
+    .status-offline { color: #ff4d4d; }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #1b1b1b;
+      padding: 10px;
+    }
+    .tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      margin: 0 5px;
+      background: #2c2c2c;
+      border-radius: 5px;
+    }
+    .tab.active {
+      background: #007bff;
+    }
+    section {
+      display: none;
+      padding: 15px;
+    }
+    section.active {
+      display: block;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    input, select {
+      background: #2c2c2c;
+      color: white;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #444;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #121212;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #00cc66;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0px 0px 8px rgba(0,0,0,0.4);
+    }
+    #fabRefresh { left: 20px; }
+    #fabGoPicks { right: 20px; }
   </style>
 </head>
-
 <body>
-  <!-- Cabecera -->
   <header>
-    <strong>⚽ Apuestas PRO</strong>
-    <div class="header-status">
-      <span class="badge" id="status-api">API-Football</span>
-      <span class="badge" id="status-odds">Odds</span>
-    </div>
+    <div>API-Football: <span id="apiStatus" class="status-offline">Offline</span></div>
+    <div>Odds: <span id="oddsStatus" class="status-offline">Offline</span></div>
   </header>
 
-  <!-- Pestañas -->
-  <nav>
-    <button id="tab-inicio" class="active">🏠 Inicio</button>
-    <button id="tab-picks">📝 Mis Picks</button>
-  </nav>
+  <div class="tabs">
+    <div class="tab active" id="tab-inicio">🏠 Inicio</div>
+    <div class="tab" id="tab-picks">📝 Mis Picks</div>
+  </div>
 
-  <main>
-    <!-- Página INICIO (contenidos libres; aquí dejo un creador manual simple) -->
-    <section id="inicio">
-      <h2>Crear pick manual</h2>
-      <div class="card">
-        <div class="row">
-          <input id="mpHome" placeholder="Equipo local" />
-          <input id="mpAway" placeholder="Equipo visitante" />
-          <input id="mpOdd"  placeholder="Cuota (opcional)" inputmode="decimal" />
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="add-pick">➕ Añadir pick</button>
-          <button class="btn secondary" id="fabRefresh" title="Refrescar">⟳</button>
-          <button class="btn secondary" id="fabGoPicks" title="Ir a Mis Picks">⭐</button>
-        </div>
-        <p style="opacity:.7; margin-top:10px;">La probabilidad se calcula automáticamente con la fórmula
-        <code>1 / cuota * 100</code> si introduces una cuota.</p>
-      </div>
-    </section>
+  <!-- 📌 INICIO -->
+  <section id="inicio" class="active">
+    <h3>⚽ Buscar partidos</h3>
+    <select id="leagueSelect"></select>
+    <input type="date" id="dateInput" />
+    <button id="btnBuscar">🔍 Buscar partidos</button>
 
-    <!-- Página MIS PICKS -->
-    <section id="picks" style="display:none;">
-      <h2>⭐ Mis Picks</h2>
-      <div id="lista-picks" class="card">Cargando…</div>
-    </section>
-  </main>
+    <div id="partidosContainer"></div>
 
-  <!-- Scripts (orden correcto) -->
+    <h3>✍️ Crear pick manual</h3>
+    <input type="text" id="mpHome" placeholder="Equipo local">
+    <input type="text" id="mpAway" placeholder="Equipo visitante">
+    <input type="number" id="mpOdd" placeholder="Cuota (opcional)">
+    <button id="btnAddPick">➕ Añadir pick</button>
+  </section>
+
+  <!-- ⭐ MIS PICKS -->
+  <section id="picks">
+    <h3>📝 Tus Picks</h3>
+    <ul id="listaPicks"></ul>
+    <div style="display:flex; gap:10px;">
+      <button id="btnExport">📤 Exportar</button>
+      <button id="btnClear" class="secondary">🗑️ Borrar todo</button>
+    </div>
+  </section>
+
+  <!-- FAB -->
+  <div class="fab" id="fabRefresh">⟳</div>
+  <div class="fab" id="fabGoPicks">⭐</div>
+
   <script src="config.js"></script>
-  <script src="app.js?v=local-picks-3"></script>
-
-  <!-- Pegatina de depuración minúscula -->
-  <div style="position:fixed;left:12px;bottom:10px;font-size:11px;opacity:.35;">v-local</div>
-
-  <!-- Integraciones mínimas para los botones extra (opcional) -->
-  <script>
-    // Ir a "Mis Picks" con el botón de la cabecera de Inicio
-    document.getElementById('fabGoPicks')?.addEventListener('click', () => {
-      document.getElementById('tab-picks')?.click();
-    });
-
-    // Refrescar lista en Mis Picks
-    document.getElementById('fabRefresh')?.addEventListener('click', () => {
-      // Si estás en Mis Picks, fuerzo un clic sobre la pestaña para re-renderizar
-      const tabP = document.getElementById('tab-picks');
-      if (!tabP) return;
-      const wasActive = tabP.classList.contains('active');
-      tabP.click();               // ir a Mis Picks
-      if (!wasActive) {
-        // volver a Inicio si antes no estaba activa
-        setTimeout(() => document.getElementById('tab-inicio')?.click(), 250);
-      }
-    });
-
-    // Si quieres que el botón "Añadir pick" tome los valores de los inputs:
-    const btnAdd = document.getElementById('add-pick');
-    btnAdd?.addEventListener('click', () => {
-      const home = (document.getElementById('mpHome')?.value || '').trim();
-      const away = (document.getElementById('mpAway')?.value || '').trim();
-      const odd  = (document.getElementById('mpOdd')?.value  || '').trim();
-      if (!home || !away) {
-        alert('Rellena local y visitante');
-        return;
-      }
-      // Delega en app.js: éste también escucha el botón y guarda por prompt;
-      // aquí simulo prompt para usar el mismo flujo:
-      const oldPrompt = window.prompt;
-      window.prompt = (msg) => (msg.includes('Equipo local') ? home :
-                                msg.includes('Equipo visitante') ? away :
-                                msg.includes('Cuota') ? odd : '');
-      try { btnAdd.dispatchEvent(new Event('click')); } catch {}
-      finally { window.prompt = oldPrompt; }
-      // Limpio los inputs
-      document.getElementById('mpHome').value = '';
-      document.getElementById('mpAway').value = '';
-      document.getElementById('mpOdd').value  = '';
-    }, { once: true }); // engancho una sola vez y dejo que app.js gestione después
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
