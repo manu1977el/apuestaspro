@@ -1,279 +1,199 @@
-// ==========================
-// 📲 Apuestas PRO - app.js
-// ==========================
-const API_KEY = 'TU_API_KEY_AQUI';   // ⚠️ Usa tu key real aquí
-const API_URL = 'https://v3.football.api-sports.io';
+// ===============================
+// ⚽ Apuestas PRO - app.js
+// ===============================
 
-// ---------------------------
-// Elementos UI
-// ---------------------------
-const apiStatus = document.getElementById('apiStatus');
-const oddsStatus = document.getElementById('oddsStatus');
-const tabHome = document.getElementById('tabHome');
-const tabPicks = document.getElementById('tabPicks');
-const sectionHome = document.getElementById('home');
-const sectionPicks = document.getElementById('picks');
-const selLeague = document.getElementById('selLeague');
-const selDate = document.getElementById('selDate');
-const btnSearch = document.getElementById('btnSearch');
-const matchesDiv = document.getElementById('matches');
-const picksList = document.getElementById('picksList');
-const btnExport = document.getElementById('btnExport');
-const btnClear = document.getElementById('btnClear');
-const fabRefresh = document.getElementById('fabRefresh');
-const fabGoPicks = document.getElementById('fabGoPicks');
+const tabInicio = document.getElementById("tab-inicio");
+const tabPicks = document.getElementById("tab-picks");
+const sectionInicio = document.getElementById("inicio");
+const sectionPicks = document.getElementById("picks");
 
-// Manual pick
-const mpHome = document.getElementById('mpHome');
-const mpAway = document.getElementById('mpAway');
-const mpOdd = document.getElementById('mpOdd');
-const btnAddPick = document.getElementById('btnAddPick');
-const m1x2Home = document.getElementById('m1x2Home');
-const m1x2Draw = document.getElementById('m1x2Draw');
-const m1x2Away = document.getElementById('m1x2Away');
-const mOver25 = document.getElementById('mOver25');
-const mUnder25 = document.getElementById('mUnder25');
-const mBTTSYes = document.getElementById('mBTTSYes');
-const mBTTSNo = document.getElementById('mBTTSNo');
+const apiStatusEl = document.getElementById("api-football-status");
+const oddsStatusEl = document.getElementById("odds-status");
 
-// Modal
-const pickModal = document.getElementById('pickModal');
-const pmTeams = document.getElementById('pmTeams');
-const pmLeague = document.getElementById('pmLeague');
-const pm1x2Home = document.getElementById('pm1x2Home');
-const pm1x2Draw = document.getElementById('pm1x2Draw');
-const pm1x2Away = document.getElementById('pm1x2Away');
-const pmOver25 = document.getElementById('pmOver25');
-const pmUnder25 = document.getElementById('pmUnder25');
-const pmBTTSYes = document.getElementById('pmBTTSYes');
-const pmBTTSNo = document.getElementById('pmBTTSNo');
-const pmSave = document.getElementById('pmSave');
-const pmCancel = document.getElementById('pmCancel');
+const ligaSelect = document.getElementById("ligaSeleccionar");
+const dateInput = document.getElementById("dateInput");
+const btnBuscar = document.getElementById("btnBuscar");
+const partidosContainer = document.getElementById("partidosContainer");
 
-// ---------------------------
-// LocalStorage
-// ---------------------------
-const LS_KEY = 'apuestas_pro_picks';
+const btnAddPick = document.getElementById("btnAddPick");
+const listaPicks = document.getElementById("listaPicks");
+const btnExportar = document.getElementById("btnExportar");
+const btnClearPicks = document.getElementById("btnClearPicks");
 
-// ---------------------------
-// API Helper
-// ---------------------------
-async function apiFetch(endpoint) {
+const LS_KEY = "ap_picks_v1";
+
+// =========================
+// Navegación entre pestañas
+// =========================
+tabInicio.addEventListener("click", () => {
+  tabInicio.classList.add("active");
+  tabPicks.classList.remove("active");
+  sectionInicio.classList.add("active");
+  sectionPicks.classList.remove("active");
+});
+
+tabPicks.addEventListener("click", () => {
+  tabPicks.classList.add("active");
+  tabInicio.classList.remove("active");
+  sectionPicks.classList.add("active");
+  sectionInicio.classList.remove("active");
+});
+
+// =========================
+// Cargar competiciones
+// =========================
+async function cargarLigas() {
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: { 'x-apisports-key': API_KEY }
+    const res = await fetch(`${API_BASE_FOOTBALL}/leagues?current=true`, { headers: HEADERS_FOOTBALL });
+    if (!res.ok) throw new Error("Error API");
+    const data = await res.json();
+    ligaSelect.innerHTML = "";
+    data.response.forEach(liga => {
+      const opt = document.createElement("option");
+      opt.value = liga.league.id;
+      opt.textContent = `${liga.country.name} - ${liga.league.name}`;
+      ligaSelect.appendChild(opt);
     });
-    if (!res.ok) throw new Error('Error API');
-    apiStatus.textContent = 'Online';
-    apiStatus.className = 'online';
-    return await res.json();
+    apiStatusEl.textContent = "Online";
+    apiStatusEl.className = "online";
   } catch (err) {
     console.warn(err);
-    apiStatus.textContent = 'Offline';
-    apiStatus.className = 'offline';
-    return null;
+    ligaSelect.innerHTML = `<option>No disponible</option>`;
+    apiStatusEl.textContent = "Offline";
+    apiStatusEl.className = "offline";
   }
 }
 
-// ---------------------------
-// Competitions
-// ---------------------------
-async function loadLeagues() {
-  selLeague.innerHTML = `<option value="">Cargando ligas...</option>`;
-  const data = await apiFetch('/leagues?current=true');
-  if (!data) {
-    selLeague.innerHTML = `<option value="">No disponible</option>`;
-    return;
-  }
-  const leagues = data.response;
-  selLeague.innerHTML = `<option value="">Selecciona competición</option>`;
-  leagues.forEach(l => {
-    const opt = document.createElement('option');
-    opt.value = l.league.id;
-    opt.textContent = `${l.country.name} - ${l.league.name}`;
-    selLeague.appendChild(opt);
-  });
-}
+// =========================
+// Buscar partidos + cuotas
+// =========================
+btnBuscar.addEventListener("click", async () => {
+  const ligaId = ligaSelect.value;
+  const fecha = dateInput.value;
+  if (!ligaId || !fecha) return alert("Selecciona liga y fecha");
 
-// ---------------------------
-// Matches
-// ---------------------------
-async function searchMatches() {
-  const leagueId = selLeague.value;
-  const date = selDate.value;
-  if (!leagueId || !date) {
-    alert('Selecciona liga y fecha');
-    return;
-  }
-  matchesDiv.innerHTML = `<p>Cargando partidos...</p>`;
-  const data = await apiFetch(`/fixtures?league=${leagueId}&season=2025&date=${date}`);
-  if (!data || data.response.length === 0) {
-    matchesDiv.innerHTML = `<p>No hay partidos para esta fecha</p>`;
-    return;
-  }
-  renderMatches(data.response);
-}
+  partidosContainer.innerHTML = "<p>⏳ Cargando partidos...</p>";
 
-function renderMatches(matches) {
-  matchesDiv.innerHTML = '';
-  matches.forEach(m => {
-    const card = document.createElement('div');
-    card.className = 'match-card';
-    card.innerHTML = `
-      <div class="match-info">
-        <strong>${m.teams.home.name}</strong> vs <strong>${m.teams.away.name}</strong><br>
-        <span>${m.league.name} · ${m.fixture.date.split('T')[0]}</span>
-      </div>
-      <button class="btn small add-pick" data-home="${m.teams.home.name}" data-away="${m.teams.away.name}" data-league="${m.league.name}" data-date="${m.fixture.date.split('T')[0]}">➕</button>
-    `;
-    matchesDiv.appendChild(card);
-  });
-
-  document.querySelectorAll('.add-pick').forEach(btn => {
-    btn.addEventListener('click', () => {
-      openPickModal(btn.dataset.home, btn.dataset.away, btn.dataset.league, btn.dataset.date);
+  try {
+    const res = await fetch(`${API_BASE_FOOTBALL}/fixtures?league=${ligaId}&season=${TEMPORADA}&date=${fecha}`, {
+      headers: HEADERS_FOOTBALL
     });
-  });
+    const data = await res.json();
+
+    if (data.response.length === 0) {
+      partidosContainer.innerHTML = "<p>No hay partidos para esta fecha.</p>";
+      return;
+    }
+
+    // Render partidos con cuotas automáticas
+    partidosContainer.innerHTML = "";
+    for (const match of data.response) {
+      const matchDiv = document.createElement("div");
+      matchDiv.classList.add("match");
+      matchDiv.innerHTML = `
+        <strong>${match.teams.home.name} vs ${match.teams.away.name}</strong>
+        <div class="odds" id="odds-${match.fixture.id}">Cargando cuotas...</div>
+      `;
+      partidosContainer.appendChild(matchDiv);
+
+      // Llamada a cuotas automáticas
+      fetchCuotas(match.fixture.id);
+    }
+
+  } catch (err) {
+    partidosContainer.innerHTML = "<p>Error al cargar partidos.</p>";
+    console.error(err);
+  }
+});
+
+// =========================
+// Obtener cuotas automáticas (1X2)
+// =========================
+async function fetchCuotas(fixtureId) {
+  try {
+    const res = await fetch(`${API_BASE_ODDS}?fixture=${fixtureId}`, {
+      headers: HEADERS_ODDS
+    });
+    if (!res.ok) throw new Error("Error Odds");
+
+    const data = await res.json();
+    const oddsDiv = document.getElementById(`odds-${fixtureId}`);
+
+    if (data.response.length === 0) {
+      oddsDiv.innerHTML = "Sin cuotas disponibles";
+      oddsStatusEl.textContent = "Offline";
+      oddsStatusEl.className = "offline";
+      return;
+    }
+
+    // Tomar cuotas 1X2 de la primera casa disponible
+    const bookie = data.response[0];
+    const mercados = bookie.bookmakers[0].bets.find(b => b.name === "Match Winner");
+
+    if (mercados) {
+      const home = mercados.values.find(v => v.value === "Home")?.odd || "-";
+      const draw = mercados.values.find(v => v.value === "Draw")?.odd || "-";
+      const away = mercados.values.find(v => v.value === "Away")?.odd || "-";
+
+      oddsDiv.innerHTML = `
+        🏠 ${home} | 🤝 ${draw} | 🧳 ${away}
+      `;
+    } else {
+      oddsDiv.innerHTML = "Sin cuotas 1X2";
+    }
+
+    oddsStatusEl.textContent = "Online";
+    oddsStatusEl.className = "online";
+  } catch (err) {
+    console.warn(err);
+    oddsStatusEl.textContent = "Offline";
+    oddsStatusEl.className = "offline";
+  }
 }
 
-// ---------------------------
-// Modal funciones
-// ---------------------------
-function openPickModal(home, away, league, date) {
-  pmTeams.textContent = `${home} vs ${away}`;
-  pmLeague.textContent = `${league} · ${date}`;
-  pickModal.classList.add('show');
-  pickModal.dataset.home = home;
-  pickModal.dataset.away = away;
-  pickModal.dataset.league = league;
-  pickModal.dataset.date = date;
+// =========================
+// Picks manuales
+// =========================
+function mostrarPicks() {
+  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+  listaPicks.innerHTML = picks.map((p, i) =>
+    `<li>${p.local} vs ${p.visitante} | Cuota: ${p.cuota || '-'} 
+     <button onclick="eliminarPick(${i})">❌</button></li>`
+  ).join("");
 }
 
-function closePickModal() {
-  pickModal.classList.remove('show');
-  [pm1x2Home, pm1x2Draw, pm1x2Away, pmOver25, pmUnder25, pmBTTSYes, pmBTTSNo].forEach(i => i.value = '');
-}
-
-// ---------------------------
-// Picks almacenamiento
-// ---------------------------
-function getPicks() {
-  return JSON.parse(localStorage.getItem(LS_KEY) || '[]');
-}
-
-function savePicks(picks) {
-  localStorage.setItem(LS_KEY, JSON.stringify(picks));
-}
-
-function addPick(pick) {
-  const picks = getPicks();
+function guardarPick(pick) {
+  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
   picks.push(pick);
-  savePicks(picks);
-  renderPicks();
+  localStorage.setItem(LS_KEY, JSON.stringify(picks));
+  mostrarPicks();
 }
 
-function renderPicks() {
-  const picks = getPicks();
-  picksList.innerHTML = '';
-  if (picks.length === 0) {
-    picksList.innerHTML = '<li>No tienes picks guardados</li>';
-    return;
-  }
-  picks.forEach((p, i) => {
-    const li = document.createElement('li');
-    li.className = 'pick-item';
-    li.innerHTML = `
-      <strong>${p.home}</strong> vs <strong>${p.away}</strong> (${p.league || ''})<br>
-      <small>${p.date || ''}</small><br>
-      <small>${p.markets || ''}</small>
-    `;
-    picksList.appendChild(li);
-  });
-}
-
-btnExport.addEventListener('click', () => {
-  const picks = getPicks();
-  if (picks.length === 0) return;
-  const csv = 'data:text/csv;charset=utf-8,' + [
-    ['Local', 'Visitante', 'Liga', 'Fecha', 'Mercados'],
-    ...picks.map(p => [p.home, p.away, p.league || '', p.date || '', p.markets || ''])
-  ].map(e => e.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = encodeURI(csv);
-  a.download = 'picks.csv';
-  a.click();
+btnAddPick.addEventListener("click", () => {
+  const local = document.getElementById("mpHome").value.trim();
+  const visitante = document.getElementById("mpAway").value.trim();
+  const cuota = document.getElementById("mpOdd").value.trim();
+  if (!local || !visitante) return alert("Completa los equipos");
+  guardarPick({ local, visitante, cuota });
+  document.getElementById("mpHome").value = "";
+  document.getElementById("mpAway").value = "";
+  document.getElementById("mpOdd").value = "";
 });
 
-btnClear.addEventListener('click', () => {
-  if (confirm('¿Borrar todos los picks?')) {
-    savePicks([]);
-    renderPicks();
-  }
+window.eliminarPick = (i) => {
+  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+  picks.splice(i, 1);
+  localStorage.setItem(LS_KEY, JSON.stringify(picks));
+  mostrarPicks();
+};
+
+btnClearPicks.addEventListener("click", () => {
+  localStorage.removeItem(LS_KEY);
+  mostrarPicks();
 });
 
-// ---------------------------
-// Eventos
-// ---------------------------
-
-// Tabs
-tabHome.addEventListener('click', () => {
-  tabHome.classList.add('active');
-  tabPicks.classList.remove('active');
-  sectionHome.style.display = 'block';
-  sectionPicks.style.display = 'none';
-});
-
-tabPicks.addEventListener('click', () => {
-  tabPicks.classList.add('active');
-  tabHome.classList.remove('active');
-  sectionPicks.style.display = 'block';
-  sectionHome.style.display = 'none';
-  renderPicks();
-});
-
-// Modal
-pmCancel.addEventListener('click', closePickModal);
-pmSave.addEventListener('click', () => {
-  const pick = {
-    home: pickModal.dataset.home,
-    away: pickModal.dataset.away,
-    league: pickModal.dataset.league,
-    date: pickModal.dataset.date,
-    markets: `1X2: ${pm1x2Home.value || '-'} / ${pm1x2Draw.value || '-'} / ${pm1x2Away.value || '-'}, Over2.5: ${pmOver25.value || '-'}, Under2.5: ${pmUnder25.value || '-'}, BTTS: ${pmBTTSYes.value || '-'} / ${pmBTTSNo.value || '-'}`
-  };
-  addPick(pick);
-  closePickModal();
-});
-
-// Manual pick
-btnAddPick.addEventListener('click', () => {
-  if (!mpHome.value || !mpAway.value) {
-    alert('Introduce equipos');
-    return;
-  }
-  const pick = {
-    home: mpHome.value,
-    away: mpAway.value,
-    markets: `1X2: ${m1x2Home.value || '-'} / ${m1x2Draw.value || '-'} / ${m1x2Away.value || '-'}, Over2.5: ${mOver25.value || '-'}, Under2.5: ${mUnder25.value || '-'}, BTTS: ${mBTTSYes.value || '-'} / ${mBTTSNo.value || '-'}`
-  };
-  addPick(pick);
-  mpHome.value = mpAway.value = mpOdd.value = '';
-  [m1x2Home, m1x2Draw, m1x2Away, mOver25, mUnder25, mBTTSYes, mBTTSNo].forEach(i => i.value = '');
-});
-
-// FAB
-fabRefresh.addEventListener('click', loadLeagues);
-fabGoPicks.addEventListener('click', () => tabPicks.click());
-
-// Buscar partidos
-btnSearch.addEventListener('click', searchMatches);
-
-// ---------------------------
-// Init
-// ---------------------------
-(function init() {
-  const today = new Date().toISOString().split('T')[0];
-  selDate.value = today;
-  loadLeagues();
-  renderPicks();
-})();
+// =========================
+// Inicialización
+// =========================
+cargarLigas();
+mostrarPicks();
