@@ -1,15 +1,14 @@
 /* ===============================
    ⚽ Apuestas PRO - Estilos generales
 =============================== */
-
 :root {
-  --color-bg: #121212;
-  --color-card: #1e1e1e;
-  --color-text: #f1f1f1;
-  --color-primary: #1e88e5;
-  --color-secondary: #444;
-  --color-success: #4caf50;
-  --color-error: #e53935;
+  --bg: #121212;
+  --card: #1e1e1e;
+  --text: #f1f1f1;
+  --primary: #1e88e5;
+  --secondary: #444;
+  --success: #4caf50;
+  --error: #e53935;
 }
 
 * {
@@ -20,45 +19,47 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: system-ui, Arial, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bg);
+  color: var(--text);
   height: 100%;
 }
 
-h1, h3 {
+h1, h3, h4 {
   margin: 0;
 }
 
+/* ===============================
+   Topbar
+=============================== */
 .topbar {
-  background: var(--color-card);
+  background: var(--card);
   padding: 10px 15px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  gap: 5px;
 }
 
 .statusline {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .online {
-  color: var(--color-success);
+  color: var(--success);
   font-weight: bold;
 }
+
 .offline {
-  color: var(--color-error);
+  color: var(--error);
   font-weight: bold;
 }
 
 /* ===============================
    Tabs
 =============================== */
-
 .tabs {
   display: flex;
   justify-content: space-around;
-  background: var(--color-card);
+  background: var(--card);
   border-top: 1px solid #333;
   border-bottom: 1px solid #333;
 }
@@ -68,18 +69,17 @@ h1, h3 {
   padding: 12px;
   background: none;
   border: none;
-  color: var(--color-text);
+  color: var(--text);
   font-size: 1rem;
 }
 
 .tabs button.active {
-  background: var(--color-primary);
+  background: var(--primary);
 }
 
 /* ===============================
    Secciones
 =============================== */
-
 .section {
   padding: 15px;
 }
@@ -96,7 +96,7 @@ h1, h3 {
   margin-top: 4px;
   background: #222;
   border: 1px solid #444;
-  color: var(--color-text);
+  color: var(--text);
   border-radius: 4px;
 }
 
@@ -104,13 +104,13 @@ h1, h3 {
   padding: 10px 14px;
   border: none;
   border-radius: 4px;
-  background: var(--color-secondary);
-  color: var(--color-text);
+  background: var(--secondary);
+  color: var(--text);
   cursor: pointer;
 }
 
 .btn.primary {
-  background: var(--color-primary);
+  background: var(--primary);
 }
 
 .btn.secondary {
@@ -123,44 +123,38 @@ h1, h3 {
 }
 
 .btn:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 /* ===============================
    Cards de partidos
 =============================== */
-
 .cards {
-  margin-top: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.card {
-  background: var(--color-card);
+.match-card {
+  background: var(--card);
   padding: 10px;
   border-radius: 6px;
-}
-
-.card .row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-.card .col {
-  display: flex;
-  flex-direction: column;
+.match-info {
+  font-size: 0.9rem;
 }
 
-.card .col.right {
-  text-align: right;
+.match-info strong {
+  font-weight: 600;
 }
 
 /* ===============================
-   Picks
+   Picks list
 =============================== */
-
 .list {
   list-style: none;
   padding: 0;
@@ -168,15 +162,11 @@ h1, h3 {
 }
 
 .list li {
-  background: var(--color-card);
+  background: var(--card);
   padding: 10px;
   margin-bottom: 8px;
   border-radius: 6px;
-}
-
-.markets {
-  font-size: 0.85rem;
-  margin-top: 4px;
+  font-size: 0.9rem;
 }
 
 .muted {
@@ -185,30 +175,36 @@ h1, h3 {
   padding: 10px;
 }
 
+/* ===============================
+   Mercados
+=============================== */
 .market-group {
   margin-top: 10px;
 }
 
-.market-input {
-  width: 100%;
-  padding: 6px;
-  margin-top: 4px;
-  background: #222;
-  border: 1px solid #444;
-  color: var(--color-text);
-  border-radius: 4px;
+.market-group h4 {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
 }
 
 .row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 5px;
+}
+
+.market-input {
+  width: 100%;
+  padding: 6px;
+  background: #222;
+  border: 1px solid #444;
+  color: var(--text);
+  border-radius: 4px;
 }
 
 /* ===============================
    FABs (botones flotantes)
 =============================== */
-
 #fabContainer {
   position: fixed;
   bottom: 15px;
@@ -216,10 +212,11 @@ h1, h3 {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  z-index: 100;
 }
 
 .fab {
-  background: var(--color-primary);
+  background: var(--primary);
   border: none;
   color: white;
   padding: 14px;
@@ -233,9 +230,8 @@ h1, h3 {
 }
 
 /* ===============================
-   MODAL - Crear pick desde partido
+   MODAL Crear pick desde partido
 =============================== */
-
 .modal {
   display: none;
   position: fixed;
@@ -244,24 +240,26 @@ h1, h3 {
   background: rgba(0,0,0,0.7);
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 200;
 }
 
-.modal.open {
+.modal.show {
   display: flex;
 }
 
 .modal-content {
-  background: var(--color-card);
+  background: var(--card);
   padding: 20px;
   border-radius: 8px;
   width: 90%;
   max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-content h3 {
-  margin-top: 0;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .modal .row {
@@ -274,7 +272,6 @@ h1, h3 {
 /* ===============================
    Scroll y responsive
 =============================== */
-
 body {
   overflow-y: auto;
 }
