@@ -1,42 +1,289 @@
-:root{
-  --bg:#0e0e0f; --panel:#17181a; --muted:#9aa0a6; --text:#e9eaee;
-  --primary:#2478ff; --success:#19c37d; --danger:#e5484d; --chip:#2a2c31;
+/* ===============================
+   ⚽ Apuestas PRO - Estilos generales
+=============================== */
+
+:root {
+  --color-bg: #121212;
+  --color-card: #1e1e1e;
+  --color-text: #f1f1f1;
+  --color-primary: #1e88e5;
+  --color-secondary: #444;
+  --color-success: #4caf50;
+  --color-error: #e53935;
 }
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-.statusbar{display:flex;gap:16px;justify-content:space-between;padding:.6rem 1rem;background:#101114;border-bottom:1px solid #1e1f23}
-.dot{padding:.2rem .45rem;border-radius:12px;background:#333}
-.dot.green{background:#124b2b;color:#8df1b9}
-.dot.red{background:#4b1212;color:#ff9a9a}
 
-.tabs{display:flex;background:#0b0b0c;border-bottom:1px solid #1e1f23}
-.tab{flex:1;padding:.8rem;border:none;background:transparent;color:var(--muted);font-weight:600}
-.tab.active{background:#16171a;color:var(--text)}
+* {
+  box-sizing: border-box;
+}
 
-.page{padding:1rem}
-.filters{display:flex;flex-direction:column;gap:.6rem;background:var(--panel);padding:1rem;border-radius:10px}
-select,input[type="date"],input[type="text"],input{background:#202226;color:var(--text);border:1px solid #2a2c31;border-radius:8px;padding:.6rem}
-.btn{border:none;padding:.7rem 1rem;border-radius:8px;background:#2a2c31;color:var(--text)}
-.btn.primary{background:var(--primary)}
-.btn.success{background:var(--success)}
-.btn.danger{background:var(--danger)}
-.btn.full{width:100%}
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  height: 100%;
+}
 
-.spinner{width:36px;height:36px;border:4px solid #2a2c31;border-top:4px solid var(--primary);border-radius:50%;margin:16px auto;animation:spin 1s linear infinite}
-@keyframes spin{to{transform: rotate(360deg)}}
-.hidden{display:none}
-.counter{text-align:center;margin-top:.5rem;font-weight:700}
-.empty{text-align:center;margin-top:1rem;color:#ffb37d}
+h1, h3 {
+  margin: 0;
+}
 
-.list{margin-top:1rem;display:flex;flex-direction:column;gap:.6rem}
-.item{background:var(--panel);padding:.8rem;border-radius:10px}
-.row{display:flex;justify-content:space-between;gap:8px}
-.chip{background:var(--chip);border-radius:6px;padding:.2rem .5rem;color:var(--muted);font-size:.85rem}
+.topbar {
+  background: var(--color-card);
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-.markets-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
-.summary{margin:.8rem 0;display:flex;gap:12px;flex-wrap:wrap}
+.statusline {
+  font-size: 0.8rem;
+}
 
-.fab{position:fixed;bottom:18px;width:54px;height:54px;border-radius:50%;border:none;color:#fff;font-size:1.5rem}
-.fab.left{left:18px;background:var(--success)}
-.fab.right{right:18px;background:#2a2c31}
+.online {
+  color: var(--color-success);
+  font-weight: bold;
+}
+.offline {
+  color: var(--color-error);
+  font-weight: bold;
+}
+
+/* ===============================
+   Tabs
+=============================== */
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background: var(--color-card);
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.tabs button.active {
+  background: var(--color-primary);
+}
+
+/* ===============================
+   Secciones
+=============================== */
+
+.section {
+  padding: 15px;
+}
+
+.lbl {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.control {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  background: #222;
+  border: 1px solid #444;
+  color: var(--color-text);
+  border-radius: 4px;
+}
+
+.btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-secondary);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: var(--color-primary);
+}
+
+.btn.secondary {
+  background: #555;
+}
+
+.btn.small {
+  padding: 5px 8px;
+  font-size: 0.8rem;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+/* ===============================
+   Cards de partidos
+=============================== */
+
+.cards {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  background: var(--color-card);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.card .row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card .col {
+  display: flex;
+  flex-direction: column;
+}
+
+.card .col.right {
+  text-align: right;
+}
+
+/* ===============================
+   Picks
+=============================== */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.list li {
+  background: var(--color-card);
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+}
+
+.markets {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.muted {
+  opacity: 0.5;
+  text-align: center;
+  padding: 10px;
+}
+
+.market-group {
+  margin-top: 10px;
+}
+
+.market-input {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  background: #222;
+  border: 1px solid #444;
+  color: var(--color-text);
+  border-radius: 4px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ===============================
+   FABs (botones flotantes)
+=============================== */
+
+#fabContainer {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fab {
+  background: var(--color-primary);
+  border: none;
+  color: white;
+  padding: 14px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.fab:hover {
+  opacity: 0.85;
+}
+
+/* ===============================
+   MODAL - Crear pick desde partido
+=============================== */
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--color-card);
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.modal .row {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+/* ===============================
+   Scroll y responsive
+=============================== */
+
+body {
+  overflow-y: auto;
+}
+
+@media (min-width: 600px) {
+  .control, .btn {
+    max-width: 500px;
+  }
+  .modal-content {
+    max-width: 400px;
+  }
+}
