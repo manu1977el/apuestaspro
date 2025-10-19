@@ -1,101 +1,127 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Apuestas PRO</title>
-  <link rel="manifest" href="manifest.webmanifest" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apuestas PRO ⚽</title>
   <link rel="stylesheet" href="styles.css" />
-  <meta name="theme-color" content="#111" />
+  <meta name="theme-color" content="#1b1b1b" />
 </head>
 <body>
-  <header class="topbar">
+
+  <!-- ================= HEADER ================= -->
+  <header>
     <h1>⚽ Apuestas PRO</h1>
-    <div class="status-row">
-      <span>API-Football: <strong id="apiStatus" class="offline">Offline</strong></span>
-      <span> | Odds: <strong id="oddsStatus" class="offline">Offline</strong></span>
+    <div class="status-bar">
+      <span>API-Football: <strong id="statusApi" class="offline">Offline</strong></span>
+      <span> | Odds: <strong id="statusOdds" class="offline">Offline</strong></span>
     </div>
 
     <nav class="tabs">
-      <button id="tabHome"   class="tab active">🏠 Inicio</button>
-      <button id="tabPicks"  class="tab">📝 Mis Picks</button>
+      <button id="tabInicio" class="tab active">🏠 Inicio</button>
+      <button id="tabPicks" class="tab">⭐ Mis Picks</button>
     </nav>
   </header>
 
-  <!-- ========== INICIO (buscar partidos) ========== -->
-  <section id="home" class="page active">
+  <!-- ================= PAGINA INICIO ================= -->
+  <section id="inicio" class="page active">
     <h2>🔎 Buscar partidos</h2>
 
-    <label class="form-row">
-      <span>Competición</span>
+    <div class="form-group">
+      <label for="leagueSelect">Competición</label>
       <select id="leagueSelect">
-        <option value="" disabled selected>No disponible</option>
+        <option value="" disabled selected>Cargando...</option>
       </select>
-    </label>
+    </div>
 
-    <label class="form-row">
-      <span>Fecha</span>
-      <input id="dateInput" type="date" />
-    </label>
+    <div class="form-group">
+      <label for="dateInput">Fecha</label>
+      <input type="date" id="dateInput" />
+    </div>
 
-    <button id="btnBuscar" class="btn primary">🔍 Buscar</button>
+    <button id="btnSearch" class="btn primary">Buscar</button>
 
-    <div id="matchesContainer" class="card-list"></div>
+    <div id="matchesContainer" class="matches"></div>
   </section>
 
-  <!-- ========== MIS PICKS (crear y ver) ========== -->
+  <!-- ================= PAGINA MIS PICKS ================= -->
   <section id="picks" class="page">
-    <h2>➕ Añadir Pick Manual</h2>
+    <h2>📝 Crear Pick Manual</h2>
 
-    <div class="grid">
-      <input id="mpHome"  placeholder="Equipo local" />
-      <input id="mpAway"  placeholder="Equipo visitante" />
-      <input id="mpOdd"   placeholder="Cuota (opcional) 1.85" inputmode="decimal" />
+    <div class="form-group-inline">
+      <input type="text" id="mpHome" placeholder="Equipo local" />
+      <input type="text" id="mpAway" placeholder="Equipo visitante" />
+      <input type="number" step="0.01" id="mpOdd" placeholder="Cuota general" />
     </div>
 
     <h3>1X2 (Ganador)</h3>
-    <div class="grid">
-      <input id="odd1" placeholder="Cuota Local" inputmode="decimal" />
-      <input id="oddX" placeholder="Cuota Empate" inputmode="decimal" />
-      <input id="odd2" placeholder="Cuota Visitante" inputmode="decimal" />
+    <div class="form-group-inline">
+      <input type="number" step="0.01" id="odd1" placeholder="Local" />
+      <input type="number" step="0.01" id="oddX" placeholder="Empate" />
+      <input type="number" step="0.01" id="odd2" placeholder="Visitante" />
     </div>
 
-    <h3>Más / Menos 2.5 goles</h3>
-    <div class="grid">
-      <input id="oddOver25"  placeholder="Más de 2.5" inputmode="decimal" />
-      <input id="oddUnder25" placeholder="Menos de 2.5" inputmode="decimal" />
+    <h3>Over/Under 2.5</h3>
+    <div class="form-group-inline">
+      <input type="number" step="0.01" id="oddOver25" placeholder="Más 2.5" />
+      <input type="number" step="0.01" id="oddUnder25" placeholder="Menos 2.5" />
     </div>
 
-    <h3>Ambos marcan</h3>
-    <div class="grid">
-      <input id="oddBTTSYes" placeholder="Sí"  inputmode="decimal" />
-      <input id="oddBTTSNo"  placeholder="No"  inputmode="decimal" />
+    <h3>BTTS (Ambos marcan)</h3>
+    <div class="form-group-inline">
+      <input type="number" step="0.01" id="oddBTTSYes" placeholder="Sí" />
+      <input type="number" step="0.01" id="oddBTTSNo" placeholder="No" />
     </div>
 
     <button id="btnAddPick" class="btn primary">+ Añadir Pick</button>
 
-    <h2>🧾 Tus Picks</h2>
-    <div id="picksList" class="card-list"></div>
+    <h2>📋 Tus Picks</h2>
+    <div id="picksList" class="picks-list"></div>
 
-    <div class="row gap">
+    <div class="btn-row">
       <button id="btnExport" class="btn">📤 Exportar</button>
-      <button id="btnClear"  class="btn danger">🗑️ Borrar Todo</button>
+      <button id="btnClear" class="btn danger">🗑️ Borrar todo</button>
     </div>
   </section>
 
-  <!-- FABs -->
-  <button id="fabRefresh"  class="fab">🔄</button>
-  <button id="fabGoPicks"  class="fab alt">⭐</button>
+  <!-- ================= FAB ================= -->
+  <button id="fabSwitch" class="fab">⭐</button>
+  <button id="fabRefresh" class="fab secondary">🔄</button>
 
-  <!-- JS -->
+  <!-- ================= SCRIPTS ================= -->
   <script src="config.js"></script>
   <script src="app.js"></script>
 
   <script>
-    // Service Worker (respeta tu nombre de archivo actual)
+    // Registro del service worker si existe
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js").catch(()=>{});
+      navigator.serviceWorker.register("sw.js").catch(() => {});
     }
+
+    // Cambiar pestañas (Inicio <-> Picks)
+    const tabInicio = document.getElementById("tabInicio");
+    const tabPicks = document.getElementById("tabPicks");
+    const pageInicio = document.getElementById("inicio");
+    const pagePicks = document.getElementById("picks");
+    const fabSwitch = document.getElementById("fabSwitch");
+
+    function showInicio() {
+      tabInicio.classList.add("active");
+      tabPicks.classList.remove("active");
+      pageInicio.classList.add("active");
+      pagePicks.classList.remove("active");
+    }
+
+    function showPicks() {
+      tabPicks.classList.add("active");
+      tabInicio.classList.remove("active");
+      pagePicks.classList.add("active");
+      pageInicio.classList.remove("active");
+    }
+
+    tabInicio.addEventListener("click", showInicio);
+    tabPicks.addEventListener("click", showPicks);
+    fabSwitch.addEventListener("click", showPicks);
   </script>
 </body>
 </html>
