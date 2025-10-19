@@ -1,132 +1,163 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>⚽ Apuestas PRO</title>
+  <title>Apuestas PRO</title>
 
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f0f0f" />
+  <!-- PWA / Icons (mantén tus archivos de iconos y manifest) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- iOS PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="icon-192x192.png" />
 </head>
 <body>
+  <!-- Topbar -->
   <header class="topbar">
     <h1>⚽ Apuestas PRO</h1>
-    <div id="status" class="statusline">
+    <div class="statusline">
       API-Football: <span id="apiStatus" class="offline">Offline</span> |
       Odds: <span id="oddsStatus" class="offline">Offline</span>
     </div>
   </header>
 
-  <!-- Navegación -->
+  <!-- Tabs -->
   <nav class="tabs">
-    <button id="tab-inicio" class="active">🏠 Inicio</button>
-    <button id="tab-picks">📝 Mis Picks</button>
+    <button id="tabHome" class="active">🏠 Inicio</button>
+    <button id="tabPicks">📝 Mis Picks</button>
   </nav>
 
-  <!-- ============== INICIO ============== -->
-  <section id="inicio" class="section" style="display:block;">
-    <h3>⚽ Buscar partidos</h3>
+  <!-- Sección: Inicio -->
+  <section id="home" class="section" aria-labelledby="home-title">
+    <h3 id="home-title">🔎 Buscar partidos</h3>
 
-    <label class="lbl">Competición</label>
-    <select id="ligaSelect" class="control"></select>
+    <!-- Filtro de competición y fecha -->
+    <label class="lbl" for="selLeague">Competición</label>
+    <select id="selLeague" class="control"></select>
 
-    <label class="lbl">Fecha</label>
-    <input id="dateInput" class="control" type="date" />
+    <label class="lbl" for="selDate">Fecha</label>
+    <input id="selDate" class="control" type="date" />
 
-    <button id="btnBuscar" class="btn primary">🔍 Buscar</button>
+    <button id="btnSearch" class="btn primary" style="margin-top:12px;">
+      🔍 Buscar
+    </button>
 
-    <div id="partidosContainer" class="cards"></div>
-  </section>
+    <!-- Resultados de partidos -->
+    <div id="matches" class="cards" aria-live="polite" style="margin-top:15px;"></div>
 
-  <!-- ============== MIS PICKS ============== -->
-  <section id="picks" class="section" style="display:none;">
-    <h3>✍️ Crear pick manual</h3>
+    <!-- Crear pick manual -->
+    <h3 style="margin-top:22px;">➕ Añadir Pick Manual</h3>
 
+    <label class="lbl" for="mpHome">Equipo local</label>
     <input id="mpHome" class="control" type="text" placeholder="Equipo local" />
+
+    <label class="lbl" for="mpAway">Equipo visitante</label>
     <input id="mpAway" class="control" type="text" placeholder="Equipo visitante" />
 
-    <!-- 📊 Mercados -->
+    <label class="lbl" for="mpOdd">Cuota (opcional)</label>
+    <input id="mpOdd" class="control" type="number" step="0.01" placeholder="Ej. 1.85" />
+
+    <!-- Mercados frecuentes -->
     <div class="market-group">
-      <label>1X2 (Ganador)</label>
-      <input class="market-input" id="odd_home" type="number" step="0.01" placeholder="Cuota Local" />
-      <input class="market-input" id="odd_draw" type="number" step="0.01" placeholder="Cuota Empate" />
-      <input class="market-input" id="odd_away" type="number" step="0.01" placeholder="Cuota Visitante" />
+      <h4>1X2 (Ganador)</h4>
+      <div class="row">
+        <input id="m1x2Home" class="market-input" type="number" step="0.01" placeholder="Cuota Local" />
+        <input id="m1x2Draw" class="market-input" type="number" step="0.01" placeholder="Cuota Empate" />
+        <input id="m1x2Away" class="market-input" type="number" step="0.01" placeholder="Cuota Visitante" />
+      </div>
     </div>
 
     <div class="market-group">
-      <label>Más / Menos 2.5 goles</label>
-      <input class="market-input" id="odd_over" type="number" step="0.01" placeholder="Más de 2.5" />
-      <input class="market-input" id="odd_under" type="number" step="0.01" placeholder="Menos de 2.5" />
+      <h4>Más / Menos 2.5 goles</h4>
+      <div class="row">
+        <input id="mOver25" class="market-input" type="number" step="0.01" placeholder="Más de 2.5" />
+        <input id="mUnder25" class="market-input" type="number" step="0.01" placeholder="Menos de 2.5" />
+      </div>
     </div>
 
     <div class="market-group">
-      <label>Ambos marcan</label>
-      <input class="market-input" id="odd_btts_yes" type="number" step="0.01" placeholder="Sí" />
-      <input class="market-input" id="odd_btts_no" type="number" step="0.01" placeholder="No" />
+      <h4>Ambos marcan</h4>
+      <div class="row">
+        <input id="mBTTSYes" class="market-input" type="number" step="0.01" placeholder="Sí" />
+        <input id="mBTTSNo" class="market-input" type="number" step="0.01" placeholder="No" />
+      </div>
     </div>
 
-    <button id="btnAddPick" class="btn primary">+ Añadir Pick</button>
+    <button id="btnAddPick" class="btn primary" style="margin-top:14px;">+ Añadir Pick</button>
+  </section>
 
-    <h3 style="margin-top:18px;">⭐ Tus Picks</h3>
-    <input id="searchPicks" class="control" type="text" placeholder="Buscar por equipo o mercado..." />
-    <ul id="listaPicks" class="list"></ul>
+  <!-- Sección: Mis Picks -->
+  <section id="picks" class="section" aria-labelledby="picks-title" style="display:none;">
+    <h3 id="picks-title">📝 Tus Picks</h3>
+    <ul id="picksList" class="list"></ul>
 
     <div class="row">
-      <button id="btnExportar" class="btn">📤 Exportar</button>
-      <button id="btnClearPicks" class="btn secondary">🧹 Limpiar</button>
+      <button id="btnExport" class="btn secondary">📤 Exportar</button>
+      <button id="btnClear" class="btn">🗑️ Limpiar</button>
     </div>
   </section>
 
-  <!-- Floating Action Buttons -->
-  <div id="fabContainer">
-    <button id="fabRefresh" class="fab">🔄</button>
-    <button id="fabGoPicks" class="fab">⭐</button>
+  <!-- FABs -->
+  <div id="fabContainer" aria-hidden="true">
+    <button id="fabRefresh" class="fab" title="Refrescar competiciones">⟳</button>
+    <button id="fabGoPicks" class="fab" title="Ir a Mis Picks">⭐</button>
   </div>
 
-  <!-- ============== MODAL NUEVO PICK DESDE PARTIDO ============== -->
-  <div id="modalPick" class="modal">
+  <!-- MODAL: Crear pick desde un partido (oculto por defecto) -->
+  <div id="pickModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="pickModalTitle">
     <div class="modal-content">
-      <h3>➕ Crear pick</h3>
-      <p><strong id="modalEquipos"></strong></p>
+      <h3 id="pickModalTitle">➕ Crear pick</h3>
+      <div id="pmTeams" class="muted">Equipo local vs visitante</div>
+      <div id="pmLeague" class="muted">Liga · Fecha</div>
 
-      <!-- Campos de mercados -->
+      <!-- Mercados dentro del modal (mismo estilo que manual) -->
       <div class="market-group">
-        <label>1X2 (Ganador)</label>
-        <input class="market-input" id="m_odd_home" type="number" step="0.01" placeholder="Cuota Local" />
-        <input class="market-input" id="m_odd_draw" type="number" step="0.01" placeholder="Cuota Empate" />
-        <input class="market-input" id="m_odd_away" type="number" step="0.01" placeholder="Cuota Visitante" />
+        <h4>1X2 (Ganador)</h4>
+        <div class="row">
+          <input id="pm1x2Home" class="market-input" type="number" step="0.01" placeholder="Cuota Local" />
+          <input id="pm1x2Draw" class="market-input" type="number" step="0.01" placeholder="Cuota Empate" />
+          <input id="pm1x2Away" class="market-input" type="number" step="0.01" placeholder="Cuota Visitante" />
+        </div>
       </div>
 
       <div class="market-group">
-        <label>Más / Menos 2.5 goles</label>
-        <input class="market-input" id="m_odd_over" type="number" step="0.01" placeholder="Más de 2.5" />
-        <input class="market-input" id="m_odd_under" type="number" step="0.01" placeholder="Menos de 2.5" />
+        <h4>Más / Menos 2.5 goles</h4>
+        <div class="row">
+          <input id="pmOver25" class="market-input" type="number" step="0.01" placeholder="Más de 2.5" />
+          <input id="pmUnder25" class="market-input" type="number" step="0.01" placeholder="Menos de 2.5" />
+        </div>
       </div>
 
       <div class="market-group">
-        <label>Ambos marcan</label>
-        <input class="market-input" id="m_odd_btts_yes" type="number" step="0.01" placeholder="Sí" />
-        <input class="market-input" id="m_odd_btts_no" type="number" step="0.01" placeholder="No" />
+        <h4>Ambos marcan</h4>
+        <div class="row">
+          <input id="pmBTTSYes" class="market-input" type="number" step="0.01" placeholder="Sí" />
+          <input id="pmBTTSNo" class="market-input" type="number" step="0.01" placeholder="No" />
+        </div>
       </div>
 
-      <div class="row">
-        <button id="modalAddPick" class="btn primary">Guardar</button>
-        <button id="modalCancel" class="btn secondary">Cancelar</button>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <button id="pmCancel" class="btn">Cancelar</button>
+        <button id="pmSave" class="btn primary">Guardar</button>
       </div>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Service Worker (no tocar nombre si ya lo tienes así) -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
+      navigator.serviceWorker.register('sw.js').catch(console.warn);
     }
   </script>
+
+  <!-- Config con keys y mercados (mantén tus valores dentro) -->
+  <script src="config.js"></script>
+
+  <!-- Lógica principal -->
+  <script src="app.js"></script>
+
+  <noscript>Necesitas activar JavaScript para usar esta aplicación.</noscript>
 </body>
 </html>
