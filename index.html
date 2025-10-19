@@ -1,172 +1,132 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>⚽ Apuestas PRO</title>
 
-  <!-- 🛡️ Evitar traducciones automáticas -->
-  <meta http-equiv="Content-Language" content="es">
-  <meta name="google" content="notranslate">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <link rel="stylesheet" href="styles.css" />
 
-  <!-- 📱 PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#007bff">
-
-  <!-- 📄 Iconos -->
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-
-  <!-- 🎨 Estilos -->
-  <style>
-    body {
-      background: #0f0f0f;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      text-align: center;
-      padding: 10px;
-      background: #1b1b1b;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      background: #121212;
-    }
-    .tabs button {
-      flex: 1;
-      padding: 10px;
-      background: none;
-      color: #ccc;
-      border: none;
-      font-size: 16px;
-    }
-    .tabs button.active {
-      background: #007bff;
-      color: #fff;
-    }
-    section {
-      display: none;
-      padding: 15px;
-    }
-    section.active {
-      display: block;
-    }
-    select, input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-    }
-    select, input {
-      background: #1b1b1b;
-      color: #fff;
-    }
-    button {
-      background: #007bff;
-      color: #fff;
-      cursor: pointer;
-    }
-    button.secondary {
-      background: #444;
-    }
-    .partido {
-      background: #1b1b1b;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 10px;
-    }
-    .fab {
-      position: fixed;
-      right: 15px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #007bff;
-      color: white;
-      font-size: 22px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-      cursor: pointer;
-    }
-    #fabRefresh { bottom: 80px; }
-    #fabGoPicks { bottom: 20px; }
-
-    /* Estados API */
-    .status-online {
-      color: #0f0;
-      font-weight: bold;
-    }
-    .status-offline {
-      color: #f33;
-      font-weight: bold;
-    }
-  </style>
-
-  <title>Apuestas PRO ⚽️</title>
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icon-192x192.png" />
 </head>
 <body>
-
-  <header>
+  <header class="topbar">
     <h1>⚽ Apuestas PRO</h1>
-    <div id="statusContainer" style="font-size:14px; margin-top:5px;">
-      API-Football: <span id="apiStatus" class="status-offline">Verificando...</span> |
-      Odds: <span id="oddsStatus" class="status-offline">Verificando...</span>
+    <div id="status" class="statusline">
+      API-Football: <span id="apiStatus" class="offline">Offline</span> |
+      Odds: <span id="oddsStatus" class="offline">Offline</span>
     </div>
   </header>
 
-  <!-- 🧭 Pestañas -->
-  <div class="tabs">
-    <button id="tab-inicio" class="active">Inicio</button>
-    <button id="tab-picks">Mis Picks</button>
+  <!-- Navegación -->
+  <nav class="tabs">
+    <button id="tab-inicio" class="active">🏠 Inicio</button>
+    <button id="tab-picks">📝 Mis Picks</button>
+  </nav>
+
+  <!-- ============== INICIO ============== -->
+  <section id="inicio" class="section" style="display:block;">
+    <h3>⚽ Buscar partidos</h3>
+
+    <label class="lbl">Competición</label>
+    <select id="ligaSelect" class="control"></select>
+
+    <label class="lbl">Fecha</label>
+    <input id="dateInput" class="control" type="date" />
+
+    <button id="btnBuscar" class="btn primary">🔍 Buscar</button>
+
+    <div id="partidosContainer" class="cards"></div>
+  </section>
+
+  <!-- ============== MIS PICKS ============== -->
+  <section id="picks" class="section" style="display:none;">
+    <h3>✍️ Crear pick manual</h3>
+
+    <input id="mpHome" class="control" type="text" placeholder="Equipo local" />
+    <input id="mpAway" class="control" type="text" placeholder="Equipo visitante" />
+
+    <!-- 📊 Mercados -->
+    <div class="market-group">
+      <label>1X2 (Ganador)</label>
+      <input class="market-input" id="odd_home" type="number" step="0.01" placeholder="Cuota Local" />
+      <input class="market-input" id="odd_draw" type="number" step="0.01" placeholder="Cuota Empate" />
+      <input class="market-input" id="odd_away" type="number" step="0.01" placeholder="Cuota Visitante" />
+    </div>
+
+    <div class="market-group">
+      <label>Más / Menos 2.5 goles</label>
+      <input class="market-input" id="odd_over" type="number" step="0.01" placeholder="Más de 2.5" />
+      <input class="market-input" id="odd_under" type="number" step="0.01" placeholder="Menos de 2.5" />
+    </div>
+
+    <div class="market-group">
+      <label>Ambos marcan</label>
+      <input class="market-input" id="odd_btts_yes" type="number" step="0.01" placeholder="Sí" />
+      <input class="market-input" id="odd_btts_no" type="number" step="0.01" placeholder="No" />
+    </div>
+
+    <button id="btnAddPick" class="btn primary">+ Añadir Pick</button>
+
+    <h3 style="margin-top:18px;">⭐ Tus Picks</h3>
+    <input id="searchPicks" class="control" type="text" placeholder="Buscar por equipo o mercado..." />
+    <ul id="listaPicks" class="list"></ul>
+
+    <div class="row">
+      <button id="btnExportar" class="btn">📤 Exportar</button>
+      <button id="btnClearPicks" class="btn secondary">🧹 Limpiar</button>
+    </div>
+  </section>
+
+  <!-- Floating Action Buttons -->
+  <div id="fabContainer">
+    <button id="fabRefresh" class="fab">🔄</button>
+    <button id="fabGoPicks" class="fab">⭐</button>
   </div>
 
-  <!-- 📅 Sección Inicio -->
-  <section id="inicio" class="active">
-    <h2>Buscar partidos</h2>
-    <select id="leagueSelect"></select>
-    <input type="date" id="dateInput">
-    <button id="btnBuscar" onclick="buscarPartidos()">🔍 Buscar</button>
-    <div id="lista-partidos"></div>
+  <!-- ============== MODAL NUEVO PICK DESDE PARTIDO ============== -->
+  <div id="modalPick" class="modal">
+    <div class="modal-content">
+      <h3>➕ Crear pick</h3>
+      <p><strong id="modalEquipos"></strong></p>
 
-    <h2>➕ Añadir Pick Manual</h2>
-    <input type="text" id="mpHome" placeholder="Equipo local">
-    <input type="text" id="mpAway" placeholder="Equipo visitante">
-    <input type="number" step="0.01" id="mpComp" placeholder="Cuota (opcional)">
-    <button id="btnAddPick">+ Añadir Pick</button>
-  </section>
+      <!-- Campos de mercados -->
+      <div class="market-group">
+        <label>1X2 (Ganador)</label>
+        <input class="market-input" id="m_odd_home" type="number" step="0.01" placeholder="Cuota Local" />
+        <input class="market-input" id="m_odd_draw" type="number" step="0.01" placeholder="Cuota Empate" />
+        <input class="market-input" id="m_odd_away" type="number" step="0.01" placeholder="Cuota Visitante" />
+      </div>
 
-  <!-- 📝 Sección Picks -->
-  <section id="picks">
-    <h2>Mis Picks Guardados</h2>
-    <div id="lista-picks"></div>
-    <button class="secondary" onclick="localStorage.clear(); mostrarPicks();">🧹 Borrar todo</button>
-  </section>
+      <div class="market-group">
+        <label>Más / Menos 2.5 goles</label>
+        <input class="market-input" id="m_odd_over" type="number" step="0.01" placeholder="Más de 2.5" />
+        <input class="market-input" id="m_odd_under" type="number" step="0.01" placeholder="Menos de 2.5" />
+      </div>
 
-  <!-- 🔘 FAB -->
-  <div id="fabRefresh" class="fab">⟳</div>
-  <div id="fabGoPicks" class="fab">⭐</div>
+      <div class="market-group">
+        <label>Ambos marcan</label>
+        <input class="market-input" id="m_odd_btts_yes" type="number" step="0.01" placeholder="Sí" />
+        <input class="market-input" id="m_odd_btts_no" type="number" step="0.01" placeholder="No" />
+      </div>
 
-  <!-- 📜 Scripts -->
-  <script src="config.js"></script>
+      <div class="row">
+        <button id="modalAddPick" class="btn primary">Guardar</button>
+        <button id="modalCancel" class="btn secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
-
-  <!-- 🛰️ Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(() => console.log('✅ Service Worker registrado'))
-        .catch(err => console.error('SW error', err));
+      navigator.serviceWorker.register('./service-worker.js');
     }
   </script>
-
 </body>
 </html>
