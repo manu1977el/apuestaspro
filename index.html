@@ -15,7 +15,7 @@
   <!-- 📄 Iconos -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-  <!-- 🎨 Estilos básicos -->
+  <!-- 🎨 Estilos -->
   <style>
     body {
       background: #0f0f0f;
@@ -99,6 +99,16 @@
     }
     #fabRefresh { bottom: 80px; }
     #fabGoPicks { bottom: 20px; }
+
+    /* Estados API */
+    .status-online {
+      color: #0f0;
+      font-weight: bold;
+    }
+    .status-offline {
+      color: #f33;
+      font-weight: bold;
+    }
   </style>
 
   <title>Apuestas PRO ⚽️</title>
@@ -107,6 +117,10 @@
 
   <header>
     <h1>⚽ Apuestas PRO</h1>
+    <div id="statusContainer" style="font-size:14px; margin-top:5px;">
+      API-Football: <span id="apiStatus" class="status-offline">Verificando...</span> |
+      Odds: <span id="oddsStatus" class="status-offline">Verificando...</span>
+    </div>
   </header>
 
   <!-- 🧭 Pestañas -->
