@@ -1,7 +1,19 @@
-// ===============================
-// ⚽ Apuestas PRO - app.js
-// ===============================
+// ==================================
+// ⚽ Apuestas PRO - APP PRINCIPAL
+// ==================================
 
+// Extrae la configuración global
+const {
+  API_BASE_FOOTBALL,
+  API_BASE_ODDS,
+  HEADERS_FOOTBALL,
+  HEADERS_ODDS,
+  TEMPORADA,
+  LS_KEY,
+  STATIC_COMPETITIONS
+} = window.__AP_CFG__;
+
+// Elementos DOM
 const tabInicio = document.getElementById("tab-inicio");
 const tabPicks = document.getElementById("tab-picks");
 const sectionInicio = document.getElementById("inicio");
@@ -20,10 +32,8 @@ const listaPicks = document.getElementById("listaPicks");
 const btnExportar = document.getElementById("btnExportar");
 const btnClearPicks = document.getElementById("btnClearPicks");
 
-const LS_KEY = "ap_picks_v1";
-
 // =========================
-// Navegación entre pestañas
+// 🧭 Navegación pestañas
 // =========================
 tabInicio.addEventListener("click", () => {
   tabInicio.classList.add("active");
@@ -40,32 +50,45 @@ tabPicks.addEventListener("click", () => {
 });
 
 // =========================
-// Cargar competiciones
+// 🏆 Cargar competiciones
 // =========================
 async function cargarLigas() {
   try {
-    const res = await fetch(`${API_BASE_FOOTBALL}/leagues?current=true`, { headers: HEADERS_FOOTBALL });
-    if (!res.ok) throw new Error("Error API");
+    const res = await fetch(`${API_BASE_FOOTBALL}/leagues?current=true`, {
+      headers: HEADERS_FOOTBALL
+    });
+    if (!res.ok) throw new Error("Error API Football");
+
     const data = await res.json();
     ligaSelect.innerHTML = "";
-    data.response.forEach(liga => {
+
+    // Si no devuelve ligas, usar catálogo estático
+    const ligas = data.response.length > 0 ? data.response.map(l => ({
+      id: l.league.id,
+      name: `${l.country.name} - ${l.league.name}`
+    })) : STATIC_COMPETITIONS;
+
+    ligas.forEach(liga => {
       const opt = document.createElement("option");
-      opt.value = liga.league.id;
-      opt.textContent = `${liga.country.name} - ${liga.league.name}`;
+      opt.value = liga.id;
+      opt.textContent = liga.name;
       ligaSelect.appendChild(opt);
     });
+
     apiStatusEl.textContent = "Online";
     apiStatusEl.className = "online";
   } catch (err) {
-    console.warn(err);
-    ligaSelect.innerHTML = `<option>No disponible</option>`;
+    console.warn("❌ Error cargando ligas", err);
+    ligaSelect.innerHTML = STATIC_COMPETITIONS.map(
+      l => `<option value="${l.id}">${l.name}</option>`
+    ).join("");
     apiStatusEl.textContent = "Offline";
     apiStatusEl.className = "offline";
   }
 }
 
 // =========================
-// Buscar partidos + cuotas
+// 📅 Buscar partidos
 // =========================
 btnBuscar.addEventListener("click", async () => {
   const ligaId = ligaSelect.value;
@@ -75,9 +98,10 @@ btnBuscar.addEventListener("click", async () => {
   partidosContainer.innerHTML = "<p>⏳ Cargando partidos...</p>";
 
   try {
-    const res = await fetch(`${API_BASE_FOOTBALL}/fixtures?league=${ligaId}&season=${TEMPORADA}&date=${fecha}`, {
-      headers: HEADERS_FOOTBALL
-    });
+    const res = await fetch(
+      `${API_BASE_FOOTBALL}/fixtures?league=${ligaId}&season=${TEMPORADA}&date=${fecha}`,
+      { headers: HEADERS_FOOTBALL }
+    );
     const data = await res.json();
 
     if (data.response.length === 0) {
@@ -85,74 +109,66 @@ btnBuscar.addEventListener("click", async () => {
       return;
     }
 
-    // Render partidos con cuotas automáticas
     partidosContainer.innerHTML = "";
     for (const match of data.response) {
-      const matchDiv = document.createElement("div");
-      matchDiv.classList.add("match");
-      matchDiv.innerHTML = `
+      const div = document.createElement("div");
+      div.classList.add("match");
+      div.innerHTML = `
         <strong>${match.teams.home.name} vs ${match.teams.away.name}</strong>
         <div class="odds" id="odds-${match.fixture.id}">Cargando cuotas...</div>
       `;
-      partidosContainer.appendChild(matchDiv);
+      partidosContainer.appendChild(div);
 
-      // Llamada a cuotas automáticas
       fetchCuotas(match.fixture.id);
     }
-
   } catch (err) {
+    console.error("❌ Error cargando partidos", err);
     partidosContainer.innerHTML = "<p>Error al cargar partidos.</p>";
-    console.error(err);
   }
 });
 
 // =========================
-// Obtener cuotas automáticas (1X2)
+// 💰 Cuotas automáticas 1X2
 // =========================
 async function fetchCuotas(fixtureId) {
   try {
     const res = await fetch(`${API_BASE_ODDS}?fixture=${fixtureId}`, {
       headers: HEADERS_ODDS
     });
-    if (!res.ok) throw new Error("Error Odds");
+    if (!res.ok) throw new Error("Error Odds API");
 
     const data = await res.json();
     const oddsDiv = document.getElementById(`odds-${fixtureId}`);
 
     if (data.response.length === 0) {
-      oddsDiv.innerHTML = "Sin cuotas disponibles";
+      oddsDiv.textContent = "Sin cuotas disponibles";
       oddsStatusEl.textContent = "Offline";
       oddsStatusEl.className = "offline";
       return;
     }
 
-    // Tomar cuotas 1X2 de la primera casa disponible
-    const bookie = data.response[0];
-    const mercados = bookie.bookmakers[0].bets.find(b => b.name === "Match Winner");
-
-    if (mercados) {
-      const home = mercados.values.find(v => v.value === "Home")?.odd || "-";
-      const draw = mercados.values.find(v => v.value === "Draw")?.odd || "-";
-      const away = mercados.values.find(v => v.value === "Away")?.odd || "-";
-
-      oddsDiv.innerHTML = `
-        🏠 ${home} | 🤝 ${draw} | 🧳 ${away}
-      `;
+    const bookie = data.response[0].bookmakers[0];
+    const bet = bookie.bets.find(b => b.name === "Match Winner");
+    if (bet) {
+      const home = bet.values.find(v => v.value === "Home")?.odd || "-";
+      const draw = bet.values.find(v => v.value === "Draw")?.odd || "-";
+      const away = bet.values.find(v => v.value === "Away")?.odd || "-";
+      oddsDiv.innerHTML = `🏠 ${home} | 🤝 ${draw} | 🧳 ${away}`;
     } else {
-      oddsDiv.innerHTML = "Sin cuotas 1X2";
+      oddsDiv.textContent = "Sin cuotas 1X2";
     }
 
     oddsStatusEl.textContent = "Online";
     oddsStatusEl.className = "online";
   } catch (err) {
-    console.warn(err);
+    console.warn("❌ Error cuotas", err);
     oddsStatusEl.textContent = "Offline";
     oddsStatusEl.className = "offline";
   }
 }
 
 // =========================
-// Picks manuales
+// 📝 Picks manuales
 // =========================
 function mostrarPicks() {
   const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
@@ -193,7 +209,7 @@ btnClearPicks.addEventListener("click", () => {
 });
 
 // =========================
-// Inicialización
+// 🚀 Inicialización
 // =========================
 cargarLigas();
 mostrarPicks();
