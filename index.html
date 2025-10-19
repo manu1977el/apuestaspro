@@ -1,45 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚽ Apuestas PRO</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 🛡️ Evitar traducciones automáticas -->
+  <meta http-equiv="Content-Language" content="es">
+  <meta name="google" content="notranslate">
+
+  <!-- 📱 PWA -->
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
+
+  <!-- 📄 Iconos -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <!-- 🎨 Estilos básicos -->
   <style>
     body {
+      background: #0f0f0f;
+      color: #fff;
       font-family: Arial, sans-serif;
-      background-color: #0e0e0e;
-      color: white;
       margin: 0;
       padding: 0;
     }
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #151515;
-      padding: 10px 15px;
-      font-size: 14px;
+      text-align: center;
+      padding: 10px;
+      background: #1b1b1b;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .status-online { color: #00ff88; }
-    .status-offline { color: #ff4d4d; }
-
     .tabs {
       display: flex;
       justify-content: center;
-      background: #1b1b1b;
+      background: #121212;
+    }
+    .tabs button {
+      flex: 1;
       padding: 10px;
+      background: none;
+      color: #ccc;
+      border: none;
+      font-size: 16px;
     }
-    .tab {
-      padding: 10px 15px;
-      cursor: pointer;
-      margin: 0 5px;
-      background: #2c2c2c;
-      border-radius: 5px;
-    }
-    .tab.active {
+    .tabs button.active {
       background: #007bff;
+      color: #fff;
     }
     section {
       display: none;
@@ -48,96 +56,103 @@
     section.active {
       display: block;
     }
-    input, select, button {
+    select, input, button {
       width: 100%;
       padding: 10px;
-      margin-bottom: 10px;
+      margin: 5px 0;
+      font-size: 16px;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
     }
-    input, select {
-      background: #2c2c2c;
-      color: white;
+    select, input {
+      background: #1b1b1b;
+      color: #fff;
     }
     button {
       background: #007bff;
-      color: white;
+      color: #fff;
       cursor: pointer;
     }
     button.secondary {
       background: #444;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #121212;
+    .partido {
+      background: #1b1b1b;
       padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      border-radius: 6px;
+      margin-bottom: 10px;
     }
     .fab {
       position: fixed;
-      bottom: 20px;
+      right: 15px;
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      background: #00cc66;
+      background: #007bff;
       color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
       cursor: pointer;
-      box-shadow: 0px 0px 8px rgba(0,0,0,0.4);
     }
-    #fabRefresh { left: 20px; }
-    #fabGoPicks { right: 20px; }
+    #fabRefresh { bottom: 80px; }
+    #fabGoPicks { bottom: 20px; }
   </style>
+
+  <title>Apuestas PRO ⚽️</title>
 </head>
 <body>
+
   <header>
-    <div>API-Football: <span id="apiStatus" class="status-offline">Offline</span></div>
-    <div>Odds: <span id="oddsStatus" class="status-offline">Offline</span></div>
+    <h1>⚽ Apuestas PRO</h1>
   </header>
 
+  <!-- 🧭 Pestañas -->
   <div class="tabs">
-    <div class="tab active" id="tab-inicio">🏠 Inicio</div>
-    <div class="tab" id="tab-picks">📝 Mis Picks</div>
+    <button id="tab-inicio" class="active">Inicio</button>
+    <button id="tab-picks">Mis Picks</button>
   </div>
 
-  <!-- 📌 INICIO -->
+  <!-- 📅 Sección Inicio -->
   <section id="inicio" class="active">
-    <h3>⚽ Buscar partidos</h3>
+    <h2>Buscar partidos</h2>
     <select id="leagueSelect"></select>
-    <input type="date" id="dateInput" />
-    <button id="btnBuscar">🔍 Buscar partidos</button>
+    <input type="date" id="dateInput">
+    <button id="btnBuscar" onclick="buscarPartidos()">🔍 Buscar</button>
+    <div id="lista-partidos"></div>
 
-    <div id="partidosContainer"></div>
-
-    <h3>✍️ Crear pick manual</h3>
+    <h2>➕ Añadir Pick Manual</h2>
     <input type="text" id="mpHome" placeholder="Equipo local">
     <input type="text" id="mpAway" placeholder="Equipo visitante">
-    <input type="number" id="mpOdd" placeholder="Cuota (opcional)">
-    <button id="btnAddPick">➕ Añadir pick</button>
+    <input type="number" step="0.01" id="mpComp" placeholder="Cuota (opcional)">
+    <button id="btnAddPick">+ Añadir Pick</button>
   </section>
 
-  <!-- ⭐ MIS PICKS -->
+  <!-- 📝 Sección Picks -->
   <section id="picks">
-    <h3>📝 Tus Picks</h3>
-    <ul id="listaPicks"></ul>
-    <div style="display:flex; gap:10px;">
-      <button id="btnExport">📤 Exportar</button>
-      <button id="btnClear" class="secondary">🗑️ Borrar todo</button>
-    </div>
+    <h2>Mis Picks Guardados</h2>
+    <div id="lista-picks"></div>
+    <button class="secondary" onclick="localStorage.clear(); mostrarPicks();">🧹 Borrar todo</button>
   </section>
 
-  <!-- FAB -->
-  <div class="fab" id="fabRefresh">⟳</div>
-  <div class="fab" id="fabGoPicks">⭐</div>
+  <!-- 🔘 FAB -->
+  <div id="fabRefresh" class="fab">⟳</div>
+  <div id="fabGoPicks" class="fab">⭐</div>
 
+  <!-- 📜 Scripts -->
   <script src="config.js"></script>
   <script src="app.js"></script>
+
+  <!-- 🛰️ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('✅ Service Worker registrado'))
+        .catch(err => console.error('SW error', err));
+    }
+  </script>
+
 </body>
 </html>
