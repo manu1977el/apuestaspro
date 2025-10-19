@@ -1,195 +1,267 @@
-const {
-  API_BASE_FOOTBALL,
-  API_BASE_ODDS,
-  HEADERS_FOOTBALL,
-  HEADERS_ODDS,
-  TEMPORADA,
-  LS_KEY,
-  STATIC_COMPETITIONS
-} = window.__AP_CFG__;
+// ===== Apuestas PRO (COMPLETO) =====
+(() => {
+  const {
+    API_BASE_FOOTBALL,
+    API_BASE_ODDS,
+    SEASON,
+    LS_PICKS_KEY,
+    STATIC_COMPETITIONS,
+    HEADERS_FOOTBALL,
+    HEADERS_ODDS
+  } = window.__AP_CFG__;
 
-// Tabs
-const tabInicio = document.getElementById("tab-inicio");
-const tabPicks = document.getElementById("tab-picks");
-const sectionInicio = document.getElementById("inicio");
-const sectionPicks = document.getElementById("picks");
+  // ---- UI refs
+  const apiStatusEl  = document.getElementById("apiStatus");
+  const oddsStatusEl = document.getElementById("oddsStatus");
 
-// Status
-const apiStatusEl = document.getElementById("api-football-status");
-const oddsStatusEl = document.getElementById("odds-status");
+  const tabHome  = document.getElementById("tabHome");
+  const tabPicks = document.getElementById("tabPicks");
+  const pageHome = document.getElementById("home");
+  const pagePicks= document.getElementById("picks");
 
-// Buscar partidos
-const ligaSelect = document.getElementById("ligaSeleccionar");
-const dateInput = document.getElementById("dateInput");
-const btnBuscar = document.getElementById("btnBuscar");
-const partidosContainer = document.getElementById("partidosContainer");
+  const leagueSelect = document.getElementById("leagueSelect");
+  const dateInput    = document.getElementById("dateInput");
+  const btnBuscar    = document.getElementById("btnBuscar");
+  const matchesBox   = document.getElementById("matchesContainer");
 
-// Picks
-const btnAddPick = document.getElementById("btnAddPick");
-const listaPicks = document.getElementById("listaPicks");
-const btnExportar = document.getElementById("btnExportar");
-const btnClearPicks = document.getElementById("btnClearPicks");
+  // picks manual
+  const mpHome  = document.getElementById("mpHome");
+  const mpAway  = document.getElementById("mpAway");
+  const mpOdd   = document.getElementById("mpOdd");
 
-// Navegación tabs
-tabInicio.addEventListener("click", () => {
-  tabInicio.classList.add("active");
-  tabPicks.classList.remove("active");
-  sectionInicio.classList.add("active");
-  sectionPicks.classList.remove("active");
-});
+  const odd1    = document.getElementById("odd1");
+  const oddX    = document.getElementById("oddX");
+  const odd2    = document.getElementById("odd2");
+  const oddOver25  = document.getElementById("oddOver25");
+  const oddUnder25 = document.getElementById("oddUnder25");
+  const oddBTTSYes = document.getElementById("oddBTTSYes");
+  const oddBTTSNo  = document.getElementById("oddBTTSNo");
 
-tabPicks.addEventListener("click", () => {
-  tabPicks.classList.add("active");
-  tabInicio.classList.remove("active");
-  sectionPicks.classList.add("active");
-  sectionInicio.classList.remove("active");
-});
+  const btnAddPick = document.getElementById("btnAddPick");
+  const btnExport  = document.getElementById("btnExport");
+  const btnClear   = document.getElementById("btnClear");
+  const picksList  = document.getElementById("picksList");
 
-// Cargar ligas
-async function cargarLigas() {
-  try {
-    const res = await fetch(`${API_BASE_FOOTBALL}/leagues?current=true`, {
-      headers: HEADERS_FOOTBALL
-    });
-    if (!res.ok) throw new Error("API error");
-    const data = await res.json();
-    ligaSelect.innerHTML = "";
+  const fabRefresh = document.getElementById("fabRefresh");
+  const fabGoPicks = document.getElementById("fabGoPicks");
 
-    const ligas = data.response.length
-      ? data.response.map(l => ({
-          id: l.league.id,
-          name: `${l.country.name} - ${l.league.name}`
-        }))
-      : STATIC_COMPETITIONS;
+  // ---- helpers
+  const setAPIStatus = (ok) => {
+    apiStatusEl.textContent = ok ? "Online" : "Offline";
+    apiStatusEl.className   = ok ? "online" : "offline";
+  };
+  const setOddsStatus = (ok) => {
+    oddsStatusEl.textContent = ok ? "Online" : "Offline";
+    oddsStatusEl.className   = ok ? "online" : "offline";
+  };
 
-    ligas.forEach(liga => {
-      const opt = document.createElement("option");
-      opt.value = liga.id;
-      opt.textContent = liga.name;
-      ligaSelect.appendChild(opt);
-    });
+  const fmtDate = (d) => d.toISOString().slice(0,10);
 
-    apiStatusEl.textContent = "Online";
-    apiStatusEl.className = "online";
-  } catch (err) {
-    console.warn(err);
-    ligaSelect.innerHTML = STATIC_COMPETITIONS.map(
-      l => `<option value="${l.id}">${l.name}</option>`
-    ).join("");
-    apiStatusEl.textContent = "Offline";
-    apiStatusEl.className = "offline";
+  // ---- Tabs
+  function goHome() {
+    tabHome.classList.add("active");
+    tabPicks.classList.remove("active");
+    pageHome.classList.add("active");
+    pagePicks.classList.remove("active");
   }
-}
+  function goPicks() {
+    tabPicks.classList.add("active");
+    tabHome.classList.remove("active");
+    pagePicks.classList.add("active");
+    pageHome.classList.remove("active");
+  }
+  tabHome.addEventListener("click", goHome);
+  tabPicks.addEventListener("click", goPicks);
+  fabGoPicks.addEventListener("click", goPicks);
 
-// Buscar partidos
-btnBuscar.addEventListener("click", async () => {
-  const ligaId = ligaSelect.value;
-  const fecha = dateInput.value;
-  if (!ligaId || !fecha) return alert("Selecciona liga y fecha");
-  partidosContainer.innerHTML = "<p>⏳ Cargando partidos...</p>";
+  // ---- Cargar ligas
+  async function cargarLigas() {
+    try {
+      const url = `${API_BASE_FOOTBALL}/leagues?current=true`;
+      const res = await fetch(url, { headers: HEADERS_FOOTBALL, cache: "no-store" });
+      if (!res.ok) throw new Error("Bad status leagues");
+      const data = await res.json();
 
-  try {
-    const res = await fetch(
-      `${API_BASE_FOOTBALL}/fixtures?league=${ligaId}&season=${TEMPORADA}&date=${fecha}`,
-      { headers: HEADERS_FOOTBALL }
-    );
-    const data = await res.json();
+      // Limpiar y llenar
+      leagueSelect.innerHTML = "";
+      data.response
+        .filter(x => !!x?.league?.id)
+        .sort((a,b) => a.country.name.localeCompare(b.country.name))
+        .forEach(x => {
+          const opt = document.createElement("option");
+          opt.value = x.league.id;
+          opt.textContent = `${x.country.name} - ${x.league.name}`;
+          leagueSelect.appendChild(opt);
+        });
 
-    if (data.response.length === 0) {
-      partidosContainer.innerHTML = "<p>No hay partidos para esta fecha.</p>";
+      // si no hay nada, fallback
+      if (!leagueSelect.options.length) {
+        throw new Error("Empty leagues");
+      }
+      setAPIStatus(true);
+    } catch (e) {
+      console.warn("Leagues fallback:", e.message);
+      setAPIStatus(false);
+      leagueSelect.innerHTML = STATIC_COMPETITIONS
+        .map(l => `<option value="${l.id}">${l.name}</option>`).join("");
+    }
+  }
+
+  // ---- Buscar partidos
+  async function buscarPartidos() {
+    matchesBox.innerHTML = `<div class="hint">Buscando…</div>`;
+
+    const leagueId = leagueSelect.value;
+    const day = dateInput.value || fmtDate(new Date());
+
+    if (!leagueId) {
+      matchesBox.innerHTML = `<div class="warn">Selecciona competición</div>`;
       return;
     }
 
-    partidosContainer.innerHTML = "";
-    for (const match of data.response) {
-      const div = document.createElement("div");
-      div.classList.add("match");
-      div.innerHTML = `
-        <strong>${match.teams.home.name} vs ${match.teams.away.name}</strong>
-        <div class="odds" id="odds-${match.fixture.id}">Cargando cuotas...</div>
-      `;
-      partidosContainer.appendChild(div);
-      fetchCuotas(match.fixture.id);
-    }
-  } catch (err) {
-    console.error(err);
-    partidosContainer.innerHTML = "<p>Error al cargar partidos.</p>";
-  }
-});
+    try {
+      const url = `${API_BASE_FOOTBALL}/fixtures?league=${leagueId}&season=${SEASON}&date=${day}`;
+      const res = await fetch(url, { headers: HEADERS_FOOTBALL, cache: "no-store" });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const data = await res.json();
 
-// Cuotas
-async function fetchCuotas(fixtureId) {
-  try {
-    const res = await fetch(`${API_BASE_ODDS}?fixture=${fixtureId}`, {
-      headers: HEADERS_ODDS
-    });
-    const data = await res.json();
-    const oddsDiv = document.getElementById(`odds-${fixtureId}`);
-    if (data.response.length === 0) {
-      oddsDiv.textContent = "Sin cuotas disponibles";
-      oddsStatusEl.textContent = "Offline";
-      oddsStatusEl.className = "offline";
+      setAPIStatus(true);
+
+      if (!data.response?.length) {
+        matchesBox.innerHTML = `<div class="hint">No hay partidos para esta búsqueda.</div>`;
+        return;
+      }
+
+      matchesBox.innerHTML = data.response.map(f => {
+        const h = f.teams?.home?.name ?? "Local";
+        const a = f.teams?.away?.name ?? "Visitante";
+        const t = (f.fixture?.date || "").slice(11,16);
+        return `
+          <div class="card">
+            <div class="row">
+              <strong>${h}</strong> vs <strong>${a}</strong>
+              <span class="muted">${t}</span>
+            </div>
+            <div class="row gap">
+              <button class="btn sm" data-add="${h}||${a}">⭐ Añadir pick</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // botones "Añadir pick" desde listado
+      matchesBox.querySelectorAll("[data-add]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const [h,a] = btn.dataset.add.split("||");
+          mpHome.value = h; mpAway.value = a;
+          goPicks();
+        });
+      });
+
+    } catch (err) {
+      setAPIStatus(false);
+      matchesBox.innerHTML = `<div class="error">Error al obtener partidos.</div>`;
+      console.error(err);
+    }
+  }
+
+  // ---- Picks en LocalStorage
+  const readPicks  = () => JSON.parse(localStorage.getItem(LS_PICKS_KEY) || "[]");
+  const writePicks = (arr) => localStorage.setItem(LS_PICKS_KEY, JSON.stringify(arr));
+
+  function renderPicks() {
+    const picks = readPicks();
+    if (!picks.length) {
+      picksList.innerHTML = `<div class="hint">No tienes picks guardados.</div>`;
       return;
     }
+    picksList.innerHTML = picks.map((p,i)=>`
+      <div class="card">
+        <div><strong>${p.home}</strong> vs <strong>${p.away}</strong></div>
+        <div class="muted">Prob: ${p.prob || "-"}% | EV: ${p.ev || "0"}%</div>
+        <div class="row gap">
+          <button class="btn sm danger" data-del="${i}">Borrar</button>
+        </div>
+      </div>
+    `).join("");
 
-    const bookie = data.response[0].bookmakers[0];
-    const bet = bookie.bets.find(b => b.name === "Match Winner");
-    if (bet) {
-      const home = bet.values.find(v => v.value === "Home")?.odd || "-";
-      const draw = bet.values.find(v => v.value === "Draw")?.odd || "-";
-      const away = bet.values.find(v => v.value === "Away")?.odd || "-";
-      oddsDiv.innerHTML = `🏠 ${home} | 🤝 ${draw} | 🧳 ${away}`;
-    } else {
-      oddsDiv.textContent = "Sin cuotas 1X2";
+    picksList.querySelectorAll("[data-del]").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const idx = +b.dataset.del;
+        const arr = readPicks();
+        arr.splice(idx,1);
+        writePicks(arr);
+        renderPicks();
+      });
+    });
+  }
+
+  function addManualPick() {
+    const home = mpHome.value.trim();
+    const away = mpAway.value.trim();
+    if (!home || !away) return;
+
+    // cálculo de prob a partir de cuota única opcional
+    let prob = "";
+    const baseOdd = parseFloat(mpOdd.value.replace(",","."));
+    if (!isNaN(baseOdd) && baseOdd > 1) {
+      prob = Math.round((1/baseOdd)*100);
     }
 
-    oddsStatusEl.textContent = "Online";
-    oddsStatusEl.className = "online";
-  } catch (err) {
-    console.warn(err);
-    oddsStatusEl.textContent = "Offline";
-    oddsStatusEl.className = "offline";
+    // también guardamos mercados si los has rellenado
+    const pick = {
+      ts: Date.now(),
+      home, away,
+      prob,
+      markets: {
+        "1x2": { "1": odd1.value, "X": oddX.value, "2": odd2.value },
+        "O/U 2.5": { over: oddOver25.value, under: oddUnder25.value },
+        "BTTS": { yes: oddBTTSYes.value, no: oddBTTSNo.value }
+      }
+    };
+
+    const arr = readPicks();
+    arr.unshift(pick);
+    writePicks(arr);
+    renderPicks();
+
+    // limpiar mínimos
+    // mpHome.value = ""; mpAway.value = ""; mpOdd.value = "";
   }
-}
 
-// Picks manuales
-function mostrarPicks() {
-  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-  listaPicks.innerHTML = picks
-    .map((p, i) => `<li>${p.local} vs ${p.visitante} | ${p.cuota || "-"} <button onclick="eliminarPick(${i})">❌</button></li>`)
-    .join("");
-}
+  // ---- Odds ping (solo estado)
+  async function pingOdds() {
+    try {
+      const test = `${API_BASE_ODDS}/mapping`;
+      const r = await fetch(test, { headers: HEADERS_ODDS });
+      setOddsStatus(r.ok);
+    } catch { setOddsStatus(false); }
+  }
 
-function guardarPick(pick) {
-  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-  picks.push(pick);
-  localStorage.setItem(LS_KEY, JSON.stringify(picks));
-  mostrarPicks();
-}
+  // ---- Eventos
+  btnBuscar.addEventListener("click", buscarPartidos);
+  fabRefresh.addEventListener("click", cargarLigas);
+  btnAddPick.addEventListener("click", addManualPick);
+  btnExport.addEventListener("click", ()=> {
+    const blob = new Blob([localStorage.getItem(LS_PICKS_KEY) || "[]"], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "picks.json";
+    a.click();
+  });
+  btnClear.addEventListener("click", ()=> {
+    if (confirm("¿Borrar todos los picks?")) {
+      localStorage.removeItem(LS_PICKS_KEY);
+      renderPicks();
+    }
+  });
 
-btnAddPick.addEventListener("click", () => {
-  const local = document.getElementById("mpHome").value.trim();
-  const visitante = document.getElementById("mpAway").value.trim();
-  const cuota = document.getElementById("mpOdd").value.trim();
-  if (!local || !visitante) return alert("Completa los equipos");
-  guardarPick({ local, visitante, cuota });
-  document.getElementById("mpHome").value = "";
-  document.getElementById("mpAway").value = "";
-  document.getElementById("mpOdd").value = "";
-});
-
-window.eliminarPick = (i) => {
-  const picks = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-  picks.splice(i, 1);
-  localStorage.setItem(LS_KEY, JSON.stringify(picks));
-  mostrarPicks();
-};
-
-btnClearPicks.addEventListener("click", () => {
-  localStorage.removeItem(LS_KEY);
-  mostrarPicks();
-});
-
-// Inicializar
-cargarLigas();
-mostrarPicks();
+  // ---- Init
+  (function init(){
+    // fecha por defecto hoy
+    dateInput.value = fmtDate(new Date());
+    cargarLigas();
+    pingOdds();
+    renderPicks();
+  })();
+})();
