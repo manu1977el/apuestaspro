@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>⚽ Apuestas PRO</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
+
+  <!-- 📱 PWA -->
+  <meta name="theme-color" content="#121212" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Apuestas PRO" />
+
+  <!-- 📌 Favicons / Iconos -->
+  <link rel="apple-touch-icon" href="icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- 🎨 Estilos -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-  <!-- 🏆 Header -->
+  <!-- 🏆 Encabezado -->
   <header>
     <h1>⚽ Apuestas PRO</h1>
-    <div id="api-status">
-      API-Football: <span id="api-football-status" class="offline">Offline</span> | 
+    <div class="status">
+      API-Football: <span id="api-football-status" class="offline">Offline</span> |
       Odds: <span id="odds-status" class="offline">Offline</span>
     </div>
   </header>
@@ -24,70 +35,56 @@
     <button id="tab-picks">📝 Mis Picks</button>
   </nav>
 
-  <!-- 📅 SECCIÓN INICIO -->
-  <section id="inicio" class="section active">
-    <h2>🔍 Buscar partidos</h2>
-    <div class="form-group">
-      <label for="ligaSeleccionar">Competición</label>
-      <select id="ligaSeleccionar">
-        <option>No disponible</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="dateInput">Fecha</label>
-      <input type="date" id="dateInput">
-    </div>
-    <button id="btnBuscar" class="btn-primary">🔎 Buscar</button>
+  <!-- 🏠 INICIO -->
+  <section id="inicio" class="active">
+    <h3>🔍 Buscar partidos</h3>
+    <label for="ligaSeleccionar">Competición</label>
+    <select id="ligaSeleccionar">
+      <option>No disponible</option>
+    </select>
+
+    <label for="dateInput">Fecha</label>
+    <input type="date" id="dateInput" />
+
+    <button id="btnBuscar" class="primary">🔎 Buscar</button>
 
     <div id="partidosContainer"></div>
   </section>
 
-  <!-- 📝 SECCIÓN MIS PICKS -->
-  <section id="picks" class="section">
-    <h2>➕ Añadir Pick Manual</h2>
-    <div class="form-group">
-      <input type="text" id="mpHome" placeholder="Equipo local">
-      <input type="text" id="mpAway" placeholder="Equipo visitante">
-      <input type="number" id="mpOdd" placeholder="Cuota (opcional)">
+  <!-- 📝 MIS PICKS -->
+  <section id="picks">
+    <h3>🖊️ Añadir Pick Manual</h3>
+    <div class="grid">
+      <input id="mpHome" placeholder="Equipo local" />
+      <input id="mpAway" placeholder="Equipo visitante" />
+      <input id="mpOdd" placeholder="Cuota (opcional)" />
+    </div>
+    <div class="grid">
+      <button id="btnAddPick" class="primary">+ Añadir Pick</button>
     </div>
 
-    <!-- Mercados comunes -->
-    <div class="markets">
-      <h3>1X2 (Ganador)</h3>
-      <input type="number" id="oddLocal" placeholder="Cuota Local">
-      <input type="number" id="oddEmpate" placeholder="Cuota Empate">
-      <input type="number" id="oddVisitante" placeholder="Cuota Visitante">
-
-      <h3>Más / Menos 2.5 goles</h3>
-      <input type="number" id="oddOver" placeholder="Más de 2.5">
-      <input type="number" id="oddUnder" placeholder="Menos de 2.5">
-
-      <h3>Ambos marcan</h3>
-      <input type="number" id="oddBTTSYes" placeholder="Sí">
-      <input type="number" id="oddBTTSNo" placeholder="No">
-    </div>
-
-    <button id="btnAddPick" class="btn-primary">+ Añadir Pick</button>
-
-    <h2>📜 Tus Picks</h2>
+    <h3>📜 Tus Picks</h3>
     <ul id="listaPicks"></ul>
-    <div class="actions">
+    <div class="acciones">
       <button id="btnExportar">📤 Exportar</button>
-      <button id="btnClearPicks" class="btn-secondary">🗑️ Borrar Todo</button>
+      <button id="btnClearPicks" class="danger">🗑️ Borrar Todo</button>
     </div>
   </section>
 
-  <!-- 🌟 FAB -->
-  <button id="fabRefresh" class="fab">🔄</button>
-  <button id="fabGoPicks" class="fab">⭐</button>
+  <!-- 🛠️ FAB -->
+  <div class="fab-container">
+    <button id="fabRefresh" class="fab">🔄</button>
+    <button id="fabGoPicks" class="fab">⭐</button>
+  </div>
 
+  <!-- ⚙️ Scripts -->
   <script src="config.js"></script>
   <script src="app.js"></script>
-
-  <!-- Service Worker -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").then(() => {
+        console.log("Service Worker registrado ✅");
+      });
     }
   </script>
 </body>
