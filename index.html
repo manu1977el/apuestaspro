@@ -1,90 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>⚽ Apuestas PRO</title>
-
-  <!-- 📱 PWA -->
-  <meta name="theme-color" content="#121212" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Apuestas PRO" />
-
-  <!-- 📌 Favicons / Iconos -->
-  <link rel="apple-touch-icon" href="icon-192x192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png" />
-  <link rel="manifest" href="manifest.json" />
-
-  <!-- 🎨 Estilos -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Apuestas PRO</title>
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#111" />
 </head>
 <body>
-  <!-- 🏆 Encabezado -->
-  <header>
+  <header class="topbar">
     <h1>⚽ Apuestas PRO</h1>
-    <div class="status">
-      API-Football: <span id="api-football-status" class="offline">Offline</span> |
-      Odds: <span id="odds-status" class="offline">Offline</span>
+    <div class="status-row">
+      <span>API-Football: <strong id="apiStatus" class="offline">Offline</strong></span>
+      <span> | Odds: <strong id="oddsStatus" class="offline">Offline</strong></span>
     </div>
+
+    <nav class="tabs">
+      <button id="tabHome"   class="tab active">🏠 Inicio</button>
+      <button id="tabPicks"  class="tab">📝 Mis Picks</button>
+    </nav>
   </header>
 
-  <!-- 🧭 Navegación -->
-  <nav>
-    <button id="tab-inicio" class="active">🏠 Inicio</button>
-    <button id="tab-picks">📝 Mis Picks</button>
-  </nav>
+  <!-- ========== INICIO (buscar partidos) ========== -->
+  <section id="home" class="page active">
+    <h2>🔎 Buscar partidos</h2>
 
-  <!-- 🏠 INICIO -->
-  <section id="inicio" class="active">
-    <h3>🔍 Buscar partidos</h3>
-    <label for="ligaSeleccionar">Competición</label>
-    <select id="ligaSeleccionar">
-      <option>No disponible</option>
-    </select>
+    <label class="form-row">
+      <span>Competición</span>
+      <select id="leagueSelect">
+        <option value="" disabled selected>No disponible</option>
+      </select>
+    </label>
 
-    <label for="dateInput">Fecha</label>
-    <input type="date" id="dateInput" />
+    <label class="form-row">
+      <span>Fecha</span>
+      <input id="dateInput" type="date" />
+    </label>
 
-    <button id="btnBuscar" class="primary">🔎 Buscar</button>
+    <button id="btnBuscar" class="btn primary">🔍 Buscar</button>
 
-    <div id="partidosContainer"></div>
+    <div id="matchesContainer" class="card-list"></div>
   </section>
 
-  <!-- 📝 MIS PICKS -->
-  <section id="picks">
-    <h3>🖊️ Añadir Pick Manual</h3>
+  <!-- ========== MIS PICKS (crear y ver) ========== -->
+  <section id="picks" class="page">
+    <h2>➕ Añadir Pick Manual</h2>
+
     <div class="grid">
-      <input id="mpHome" placeholder="Equipo local" />
-      <input id="mpAway" placeholder="Equipo visitante" />
-      <input id="mpOdd" placeholder="Cuota (opcional)" />
-    </div>
-    <div class="grid">
-      <button id="btnAddPick" class="primary">+ Añadir Pick</button>
+      <input id="mpHome"  placeholder="Equipo local" />
+      <input id="mpAway"  placeholder="Equipo visitante" />
+      <input id="mpOdd"   placeholder="Cuota (opcional) 1.85" inputmode="decimal" />
     </div>
 
-    <h3>📜 Tus Picks</h3>
-    <ul id="listaPicks"></ul>
-    <div class="acciones">
-      <button id="btnExportar">📤 Exportar</button>
-      <button id="btnClearPicks" class="danger">🗑️ Borrar Todo</button>
+    <h3>1X2 (Ganador)</h3>
+    <div class="grid">
+      <input id="odd1" placeholder="Cuota Local" inputmode="decimal" />
+      <input id="oddX" placeholder="Cuota Empate" inputmode="decimal" />
+      <input id="odd2" placeholder="Cuota Visitante" inputmode="decimal" />
+    </div>
+
+    <h3>Más / Menos 2.5 goles</h3>
+    <div class="grid">
+      <input id="oddOver25"  placeholder="Más de 2.5" inputmode="decimal" />
+      <input id="oddUnder25" placeholder="Menos de 2.5" inputmode="decimal" />
+    </div>
+
+    <h3>Ambos marcan</h3>
+    <div class="grid">
+      <input id="oddBTTSYes" placeholder="Sí"  inputmode="decimal" />
+      <input id="oddBTTSNo"  placeholder="No"  inputmode="decimal" />
+    </div>
+
+    <button id="btnAddPick" class="btn primary">+ Añadir Pick</button>
+
+    <h2>🧾 Tus Picks</h2>
+    <div id="picksList" class="card-list"></div>
+
+    <div class="row gap">
+      <button id="btnExport" class="btn">📤 Exportar</button>
+      <button id="btnClear"  class="btn danger">🗑️ Borrar Todo</button>
     </div>
   </section>
 
-  <!-- 🛠️ FAB -->
-  <div class="fab-container">
-    <button id="fabRefresh" class="fab">🔄</button>
-    <button id="fabGoPicks" class="fab">⭐</button>
-  </div>
+  <!-- FABs -->
+  <button id="fabRefresh"  class="fab">🔄</button>
+  <button id="fabGoPicks"  class="fab alt">⭐</button>
 
-  <!-- ⚙️ Scripts -->
+  <!-- JS -->
   <script src="config.js"></script>
   <script src="app.js"></script>
+
   <script>
+    // Service Worker (respeta tu nombre de archivo actual)
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js").then(() => {
-        console.log("Service Worker registrado ✅");
-      });
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
     }
   </script>
 </body>
