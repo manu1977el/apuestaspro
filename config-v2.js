@@ -26,7 +26,7 @@ window.__AP_CFG__ = {
     "Accept": "application/json"
   },
 
-  SHEETS_URL: "https://script.google.com/macros/s/AKfycbysoYzQvz3-UtGrAPDrmh8T80hFCpaojK7PAydKZE8Qv0wjVAQkVJWUMX4NFG9i5VDFaQ/exec"
+  SHEETS_URL: "https://script.google.com/macros/s/AKfycbzxoyShyN3NjNi-lOmwBniplU6PX50D9SjCnp_DzpCL0LPY2oXXgdEJdo_3gSzKEI4e/exec"
 };
 
 console.log("✅ Config cargada correctamente:", window.__AP_CFG__);
