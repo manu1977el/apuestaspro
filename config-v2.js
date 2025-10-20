@@ -1,7 +1,6 @@
-<script>
 window.__AP_CFG__ = {
   // 🚀 Con proxy CORS para evitar bloqueos en iPhone/navegadores
-  API_BASE_FOOTBALL: "https://corsproxy.io/?https://v3.football.api-sports.io",
+  API_BASE_FOOTBALL: "https://corsproxy.io/?https://v3.football.api-sports.io/",
   API_BASE_ODDS: "https://api.the-odds-api.com/v4",
   SEASON: 2025,
   LS_PICKS_KEY: "apuestaspro-picks",
@@ -29,4 +28,5 @@ window.__AP_CFG__ = {
 
   SHEETS_URL: "https://script.google.com/macros/s/AKfycbysoYzQvz3-UtGrAPDrmh8T80hFCpaojK7PAydKZE8Qv0wjVAQkVJWUMX4NFG9i5VDFaQ/exec"
 };
-</script>
+
+console.log("✅ Config cargada correctamente:", window.__AP_CFG__);
