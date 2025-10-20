@@ -1,5 +1,5 @@
 // ===============================
-// ⚽ Apuestas PRO - Service Worker
+// ⚽ Apuestas PRO - Service Worker (v2)
 // ===============================
 const CACHE_NAME = "apuestaspro-v2";
 const URLS_TO_CACHE = [
@@ -19,12 +19,12 @@ const URLS_TO_CACHE = [
   "./icon-512x512.png"
 ];
 
-// Instalar SW y cachear recursos
+// 📥 Instalar SW y cachear recursos
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => Promise.all(
-        URLS_TO_CACHE.map(url => 
+        URLS_TO_CACHE.map(url =>
           cache.add(url).catch(err => console.warn("❌ No se pudo cachear", url, err))
         )
       ))
@@ -32,7 +32,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activar SW y limpiar cachés antiguas
+// 🧹 Activar SW y limpiar cachés antiguas
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -44,7 +44,7 @@ self.addEventListener("activate", (event) => {
   return self.clients.claim();
 });
 
-// Fetch con preferencia red y fallback caché
+// 🌐 Fetch: red preferida y caché como fallback
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
@@ -59,7 +59,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Forzar actualización desde la app si es necesario
+// 🔄 Permitir forzar actualización desde la app
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
