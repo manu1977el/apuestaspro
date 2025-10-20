@@ -1,4 +1,4 @@
-// ===== Apuestas PRO (COMPLETO) =====
+<script>
 (() => {
   const {
     API_BASE_FOOTBALL,
@@ -7,7 +7,8 @@
     LS_PICKS_KEY,
     STATIC_COMPETITIONS,
     HEADERS_FOOTBALL,
-    HEADERS_ODDS
+    HEADERS_ODDS,
+    SHEETS_URL
   } = window.__AP_CFG__;
 
   // ---- UI refs
@@ -82,7 +83,6 @@
       if (!res.ok) throw new Error("Bad status leagues");
       const data = await res.json();
 
-      // Limpiar y llenar
       leagueSelect.innerHTML = "";
       data.response
         .filter(x => !!x?.league?.id)
@@ -94,10 +94,7 @@
           leagueSelect.appendChild(opt);
         });
 
-      // si no hay nada, fallback
-      if (!leagueSelect.options.length) {
-        throw new Error("Empty leagues");
-      }
+      if (!leagueSelect.options.length) throw new Error("Empty leagues");
       setAPIStatus(true);
     } catch (e) {
       console.warn("Leagues fallback:", e.message);
@@ -114,13 +111,12 @@
     const leagueId = leagueSelect.value;
     const day = dateInput.value || fmtDate(new Date());
 
-    if (!leagueId) {
-      matchesBox.innerHTML = `<div class="warn">Selecciona competición</div>`;
-      return;
-    }
-
     try {
-      const url = `${API_BASE_FOOTBALL}/fixtures?league=${leagueId}&season=${SEASON}&date=${day}`;
+      // si no hay liga seleccionada, buscamos todos
+      const url = leagueId
+        ? `${API_BASE_FOOTBALL}/fixtures?league=${leagueId}&season=${SEASON}&date=${day}`
+        : `${API_BASE_FOOTBALL}/fixtures?season=${SEASON}&date=${day}`;
+
       const res = await fetch(url, { headers: HEADERS_FOOTBALL, cache: "no-store" });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
@@ -149,7 +145,6 @@
         `;
       }).join("");
 
-      // botones "Añadir pick" desde listado
       matchesBox.querySelectorAll("[data-add]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const [h,a] = btn.dataset.add.split("||");
@@ -196,19 +191,18 @@
     });
   }
 
+  // ---- Añadir Pick Manual + Sheets
   function addManualPick() {
     const home = mpHome.value.trim();
     const away = mpAway.value.trim();
     if (!home || !away) return;
 
-    // cálculo de prob a partir de cuota única opcional
     let prob = "";
     const baseOdd = parseFloat(mpOdd.value.replace(",","."));
     if (!isNaN(baseOdd) && baseOdd > 1) {
       prob = Math.round((1/baseOdd)*100);
     }
 
-    // también guardamos mercados si los has rellenado
     const pick = {
       ts: Date.now(),
       home, away,
@@ -220,19 +214,33 @@
       }
     };
 
+    // Guardar local
     const arr = readPicks();
     arr.unshift(pick);
     writePicks(arr);
     renderPicks();
 
-    // limpiar mínimos
-    // mpHome.value = ""; mpAway.value = ""; mpOdd.value = "";
+    // Enviar a Google Sheets
+    fetch(SHEETS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pick)
+    })
+      .then(r => r.json())
+      .then(out => {
+        if (out.ok) {
+          alert(`📊 Pick enviado a Sheets\nEV: ${out.ev ?? "-"} | Stake: ${out.stake ?? "-"}`);
+        } else {
+          console.warn("Sheets respuesta no OK", out);
+        }
+      })
+      .catch(err => console.error("Sheets error", err));
   }
 
   // ---- Odds ping (solo estado)
   async function pingOdds() {
     try {
-      const test = `${API_BASE_ODDS}/mapping`;
+      const test = `${API_BASE_ODDS}/sports`;
       const r = await fetch(test, { headers: HEADERS_ODDS });
       setOddsStatus(r.ok);
     } catch { setOddsStatus(false); }
@@ -258,10 +266,10 @@
 
   // ---- Init
   (function init(){
-    // fecha por defecto hoy
     dateInput.value = fmtDate(new Date());
     cargarLigas();
     pingOdds();
     renderPicks();
   })();
 })();
+</script>
