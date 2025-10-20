@@ -1,35 +1,31 @@
-// ================== CONFIGURACIÓN GLOBAL ==================
+<script>
+window.__AP_CFG__ = {
+  API_BASE_FOOTBALL: "https://v3.football.api-sports.io",
+  API_BASE_ODDS: "https://api.the-odds-api.com/v4",
+  SEASON: 2025,
+  LS_PICKS_KEY: "apuestaspro-picks",
 
-// ⚽ API-Football
-const API_BASE_URL = "https://v3.football.api-sports.io";
-const API_KEY = "6DF57D1853E112002FA1139673F50218";   // 👈 PEGA AQUÍ TU KEY REAL
+  STATIC_COMPETITIONS: [
+    { id: 0, name: "🌍 Todas las competiciones" },
+    { id: 39, name: "Premier League" },
+    { id: 140, name: "LaLiga" },
+    { id: 135, name: "Serie A" },
+    { id: 78, name: "Bundesliga" },
+    { id: 61, name: "Ligue 1" },
+    { id: 2, name: "UEFA Champions League" },
+    { id: 3, name: "UEFA Europa League" }
+  ],
 
-// 🧮 Odds API (opcional)
-const ODDS_API_URL = "https://api.the-odds-api.com/v4";
-const ODDS_API_KEY = "ddc3cb56d665397d69ceb71faf0e1b8b";   // 👈 PEGA AQUÍ TU KEY REAL (si usas odds)
+  HEADERS_FOOTBALL: {
+    "x-apisports-key": "6DF57D1853E112002FA1139673F50218",
+    "Accept": "application/json"
+  },
 
-// 🕒 Zona horaria
-const TIMEZONE = "Europe/Madrid";
+  HEADERS_ODDS: {
+    "x-api-key": "ddc3cb56d665397d69ceb71faf0e1b8b",
+    "Accept": "application/json"
+  },
 
-// ================== HEADERS ==================
-const API_HEADERS = {
-  "x-apisports-key": API_KEY,
-  "x-rapidapi-host": "v3.football.api-sports.io"
+  SHEETS_URL: "https://script.google.com/macros/s/AKfycbysoYzQvz3-UtGrAPDrmh8T80hFCpaojK7PAydKZE8Qv0wjVAQkVJWUMX4NFG9i5VDFaQ/exec"
 };
-
-const ODDS_HEADERS = {
-  "x-api-key": ODDS_API_KEY
-};
-
-// ================== FUNCIONES AUXILIARES ==================
-async function apiFootballFetch(endpoint) {
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, { headers: API_HEADERS });
-  if (!res.ok) throw new Error("Error al conectar con API-Football");
-  return res.json();
-}
-
-async function oddsFetch(endpoint) {
-  const res = await fetch(`${ODDS_API_URL}${endpoint}?apiKey=${ODDS_API_KEY}`);
-  if (!res.ok) throw new Error("Error al conectar con Odds API");
-  return res.json();
-}
+</script>
