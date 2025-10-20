@@ -5,7 +5,7 @@ const CACHE_NAME = "apuestaspro-v1";
 const URLS_TO_CACHE = [
   "./",
   "./index.html",
-  "./app.js",
+  "./app-v2.js",
   "./config-v2.js",
   "./styles.css",
   "./manifest.webmanifest",
