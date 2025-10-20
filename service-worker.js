@@ -6,7 +6,7 @@ const URLS_TO_CACHE = [
   "./",
   "./index.html",
   "./app.js",
-  "./config.js",
+  "./config-v2.js",
   "./styles.css",
   "./manifest.webmanifest",
   "./icon-72x72.png",
