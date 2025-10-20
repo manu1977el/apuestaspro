@@ -1,7 +1,7 @@
 // ===============================
 // ⚽ Apuestas PRO - Service Worker
 // ===============================
-const CACHE_NAME = "apuestaspro-v1";
+const CACHE_NAME = "apuestaspro-v2";
 const URLS_TO_CACHE = [
   "./",
   "./index.html",
@@ -23,7 +23,11 @@ const URLS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(URLS_TO_CACHE))
+      .then(cache => Promise.all(
+        URLS_TO_CACHE.map(url => 
+          cache.add(url).catch(err => console.warn("❌ No se pudo cachear", url, err))
+        )
+      ))
       .then(() => self.skipWaiting())
   );
 });
@@ -32,21 +36,30 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      )
+      Promise.all(keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
     )
   );
   return self.clients.claim();
 });
 
-// Interceptar fetch
+// Fetch con preferencia red y fallback caché
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
+});
+
+// Forzar actualización desde la app si es necesario
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
